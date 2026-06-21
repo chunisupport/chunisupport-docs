@@ -1,0 +1,25 @@
+---
+title: ChuniSupport Docs
+description: ChuniSupportのヘルプとドキュメント
+template: splash
+hero:
+  tagline: ChuniSupportの使い方、更新情報、API情報をまとめています。
+  actions:
+    - text: ヘルプを見る
+      link: /help/
+      icon: right-arrow
+      variant: primary
+    - text: ChuniSupportを開く
+      link: https://chunisupport.net/
+      icon: external
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components'
+
+<CardGrid>
+  <LinkCard href="/help/" title="ヘルプ" description="ChuniSupportの使い方を確認します。" />
+  <LinkCard href="/changelog/" title="更新履歴" description="ChuniSupportの変更内容を確認します。" />
+  <LinkCard href="/api/" title="APIドキュメント" description="ChuniSupport APIの仕様を確認します。" />
+  <LinkCard href="/legal/terms/" title="利用規約" description="ChuniSupportの利用規約を確認します。" />
+  <LinkCard href="/legal/privacy/" title="プライバシーポリシー" description="個人情報等の取り扱いを確認します。" />
+</CardGrid>
