@@ -1,0 +1,84 @@
+---
+import {
+  PUBLIC_BOOKMARKLET_ENTRYPOINT,
+  PUBLIC_BOOKMARKLET_URL,
+} from 'astro:env/server'
+
+const scriptUrl = new URL(PUBLIC_BOOKMARKLET_ENTRYPOINT, PUBLIC_BOOKMARKLET_URL)
+const bookmarklet = `javascript:(function(){var e=document.createElement("script");e.src="${scriptUrl}";document.body.appendChild(e)})();`
+---
+
+<div class="bookmarklet" data-bookmarklet>
+  <code data-bookmarklet-value>{bookmarklet}</code>
+  <div class="bookmarklet__actions">
+    <button type="button" data-bookmarklet-copy>コピー</button>
+    <span class="bookmarklet__status" role="status" aria-live="polite"></span>
+  </div>
+</div>
+
+<script>
+  for (const container of document.querySelectorAll<HTMLElement>('[data-bookmarklet]')) {
+    const value = container.querySelector<HTMLElement>('[data-bookmarklet-value]')
+    const button = container.querySelector<HTMLButtonElement>('[data-bookmarklet-copy]')
+    const status = container.querySelector<HTMLElement>('.bookmarklet__status')
+
+    button?.addEventListener('click', async () => {
+      if (!value || !status) return
+
+      try {
+        await navigator.clipboard.writeText(value.textContent ?? '')
+        status.textContent = 'コピーしました'
+      } catch {
+        status.textContent = 'コピーに失敗しました。手動でコピーしてください。'
+      }
+    })
+  }
+</script>
+
+<style>
+  .bookmarklet {
+    margin-block: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--sl-color-gray-6);
+  }
+
+  code {
+    display: block;
+    overflow-wrap: anywhere;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--sl-color-black);
+    font-size: var(--sl-text-xs);
+    line-height: 1.6;
+  }
+
+  .bookmarklet__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  button {
+    padding: 0.5rem 0.875rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: var(--sl-color-accent-high);
+    color: var(--sl-color-black);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: var(--sl-color-accent);
+  }
+
+  .bookmarklet__status {
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+  }
+</style>
