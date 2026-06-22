@@ -2,7 +2,7 @@ import { defineConfig, envField } from 'astro/config'
 import starlight from '@astrojs/starlight'
 
 export default defineConfig({
-    site: 'https://help.chunisupport.net',
+    site: 'https://docs.chunisupport.net',
     output: 'static',
     env: {
         schema: {
