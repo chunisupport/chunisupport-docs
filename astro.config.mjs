@@ -17,6 +17,11 @@ export default defineConfig({
                 access: 'public',
                 default: 'main.js',
             }),
+            PUBLIC_API_BASE_URL: envField.string({
+                context: 'server',
+                access: 'public',
+                default: 'https://api.chunisupport.net',
+            }),
         },
     },
     integrations: [
