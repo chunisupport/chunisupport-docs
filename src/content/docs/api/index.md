@@ -1,6 +1,965 @@
 ---
 title: APIドキュメント
-description: ChuniSupport APIのドキュメント
+description: ChuniSupport 外部向けAPIのドキュメントです。APIトークンを使用して楽曲情報やユーザーデータを取得できます。
 ---
 
-準備中です。
+ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプログラムから取得するためのAPIです。すべてのエンドポイントでAPIトークンによる認証が必要です。
+
+## 概要
+
+- **コンテンツタイプ**: すべてのレスポンスは `application/json` です。
+- **文字コード**: UTF-8
+
+## 認証
+
+すべてのエンドポイントでAPIトークンが必要です。リクエストヘッダーに以下の形式でトークンを指定してください。
+
+```
+Authorization: Bearer <APIトークン>
+```
+
+APIトークンはChuniSupportの設定画面から発行できます。
+
+## レートリミット
+
+すべてのエンドポイント共通で、**15分あたり150リクエスト**の制限があります。
+
+制限を超えた場合は `429 Too Many Requests` が返ります。
+
+## エラーレスポンス
+
+エラー時は以下の形式で返ります。
+
+```json
+{
+  "error": {
+    "status": 401,
+    "code": "invalid_token",
+    "message": "トークンが無効です。"
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `error.status` | number | HTTPステータスコード |
+| `error.code` | string | エラーコード（スネークケース） |
+| `error.message` | string | エラーの説明 |
+
+### 主なエラーコード
+
+| エラーコード | HTTP | 説明 |
+| ------------ | ---- | ---- |
+| `missing_token` | 401 | APIトークンが指定されていません |
+| `invalid_token` | 401 | APIトークンが無効です |
+| `too_many_requests` | 429 | レートリミットを超過しました |
+| `not_found` | 404 | 指定されたリソースが見つかりません |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+| `user_not_found` | 404 | 指定されたユーザーが見つかりません |
+| `chart_not_found` | 404 | 指定された難易度の譜面が存在しません |
+| `invalid_difficulty` | 400 | 難易度の指定が無効です |
+| `validation_failed` | 400 | リクエストパラメータが不正です |
+| `internal_error` | 500 | サーバー内部エラー |
+
+---
+
+## `/v1` API
+
+### GET `/v1/master/versions`
+
+バージョン一覧を取得します。
+
+**リクエスト**:
+
+```
+GET /v1/master/versions
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "versions": [
+    { "name": "CHUNITHM", "released_at": "2015-07-16T00:00:00+09:00" },
+    { "name": "CHUNITHM PLUS", "released_at": "2016-02-04T00:00:00+09:00" },
+    { "name": "CHUNITHM AIR", "released_at": "2016-08-25T00:00:00+09:00" }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `versions` | array | バージョン一覧（リリース日昇順） |
+| `versions[].name` | string | バージョン名 |
+| `versions[].released_at` | string | リリース日時（ISO8601形式） |
+
+---
+
+### GET `/v1/songs`
+
+WORLD'S ENDを除く全楽曲を取得します。削除済み楽曲は除外されます。
+
+**リクエスト**:
+
+```
+GET /v1/songs
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "songs": [
+    {
+      "id": "e9e66c56cb8388e9",
+      "title": "GEMINI -C-",
+      "reading": "GEMINIC",
+      "artist": "Tatsh",
+      "genre": "ORIGINAL",
+      "bpm": 180,
+      "release": "2016-03-17",
+      "jacket": "45112e2818cf80a2",
+      "official_idx": "202",
+      "maxop": 86,
+      "is_maxop_unknown": false,
+      "op_target_difficulty": "MASTER",
+      "charts": {
+        "BASIC": {
+          "const": 4,
+          "is_const_unknown": false,
+          "notes": 549,
+          "notes_designer": null
+        },
+        "ADVANCED": {
+          "const": 7,
+          "is_const_unknown": false,
+          "notes": 769,
+          "notes_designer": null
+        },
+        "EXPERT": {
+          "const": 11.3,
+          "is_const_unknown": false,
+          "notes": 1319,
+          "notes_designer": "鈴木さん"
+        },
+        "MASTER": {
+          "const": 14.2,
+          "is_const_unknown": false,
+          "notes": 1587,
+          "notes_designer": "rio -N-"
+        },
+        "ULTIMA": null
+      }
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `songs` | array | 楽曲情報の配列 |
+| `songs[].id` | string | 楽曲の表示用ID（16進数16文字） |
+| `songs[].title` | string | 楽曲名 |
+| `songs[].reading` | string \| null | 楽曲名の読み |
+| `songs[].artist` | string | アーティスト名 |
+| `songs[].genre` | string \| null | ジャンル名 |
+| `songs[].bpm` | number \| null | BPM |
+| `songs[].release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
+| `songs[].jacket` | string \| null | ジャケット画像ファイル名 |
+| `songs[].official_idx` | string | 公式ID |
+| `songs[].maxop` | number | 全譜面のうち最も定数が高い譜面で理論値を取ったときのOVER POWER値 |
+| `songs[].is_maxop_unknown` | boolean | `maxop` が暫定値である可能性がある場合に `true` |
+| `songs[].op_target_difficulty` | string \| null | `maxop` の算出対象となった譜面の難易度 |
+| `songs[].charts` | object | 譜面情報のマップ。キーは `BASIC`、`ADVANCED`、`EXPERT`、`MASTER`、`ULTIMA` の順 |
+| `songs[].charts[key].const` | number | 譜面定数 |
+| `songs[].charts[key].is_const_unknown` | boolean | 譜面定数が未確定の場合 `true` |
+| `songs[].charts[key].notes` | number \| null | ノーツ数 |
+| `songs[].charts[key].notes_designer` | string \| null | ノーツデザイナー |
+
+譜面が存在しない難易度は `null` になります。
+
+---
+
+### GET `/v1/songs/:displayid`
+
+指定された楽曲の詳細を取得します。
+
+**リクエスト**:
+
+```
+GET /v1/songs/e9e66c56cb8388e9
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `displayid` | string | 楽曲の表示用ID（16文字） |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "id": "e9e66c56cb8388e9",
+  "title": "GEMINI -C-",
+  "reading": "GEMINIC",
+  "artist": "Tatsh",
+  "genre": "ORIGINAL",
+  "bpm": 180,
+  "release": "2016-03-17",
+  "jacket": "45112e2818cf80a2",
+  "official_idx": "202",
+  "maxop": 86,
+  "is_maxop_unknown": false,
+  "op_target_difficulty": "MASTER",
+  "charts": {
+    "BASIC": {
+      "const": 4,
+      "is_const_unknown": false,
+      "notes": 549,
+      "notes_designer": null
+    },
+    "ADVANCED": {
+      "const": 7,
+      "is_const_unknown": false,
+      "notes": 769,
+      "notes_designer": null
+    },
+    "EXPERT": {
+      "const": 11.3,
+      "is_const_unknown": false,
+      "notes": 1319,
+      "notes_designer": "鈴木さん"
+    },
+    "MASTER": {
+      "const": 14.2,
+      "is_const_unknown": false,
+      "notes": 1587,
+      "notes_designer": "rio -N-"
+    },
+    "ULTIMA": null
+  }
+}
+```
+
+フィールドの詳細は [GET `/v1/songs`](#get-v1songs) を参照してください。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+
+---
+
+### GET `/v1/songs/:displayid/stats/:difficulty`
+
+指定楽曲の特定難易度におけるレーティング帯別の統計情報を取得します。
+
+**リクエスト**:
+
+```
+GET /v1/songs/e9e66c56cb8388e9/stats/master
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `displayid` | string | 楽曲の表示用ID（16文字） |
+| `difficulty` | string | 難易度名（小文字）: `basic`、`advanced`、`expert`、`master`、`ultima`、`worldsend` |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "song_id": "e9e66c56cb8388e9",
+  "stats": [
+    {
+      "rating_band": "ALL",
+      "rank": {
+        "aaal": 0,
+        "s": 0,
+        "sp": 0,
+        "ss": 0,
+        "ssp": 0,
+        "sss": 3,
+        "sssp": 0,
+        "max": 0
+      },
+      "combo": {
+        "none": 3,
+        "fc": 0,
+        "aj": 0
+      },
+      "clear": {
+        "failed": 0,
+        "clear": 0,
+        "hard": 0,
+        "brave": 3,
+        "absolute": 0,
+        "catastrophy": 0
+      },
+      "average_score": 1008991,
+      "player_count": 3
+    },
+    {
+      "rating_band": "17.5",
+      "rank": {
+        "aaal": 0,
+        "s": 0,
+        "sp": 0,
+        "ss": 0,
+        "ssp": 0,
+        "sss": 3,
+        "sssp": 0,
+        "max": 0
+      },
+      "combo": {
+        "none": 3,
+        "fc": 0,
+        "aj": 0
+      },
+      "clear": {
+        "failed": 0,
+        "clear": 0,
+        "hard": 0,
+        "brave": 3,
+        "absolute": 0,
+        "catastrophy": 0
+      },
+      "average_score": 1008991,
+      "player_count": 3
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `song_id` | string | 楽曲の識別ID |
+| `stats` | array | レーティング帯別の統計配列。先頭要素は必ず `rating_band: "ALL"`（全体統計） |
+| `stats[].rating_band` | string | レーティング帯ラベル。`"ALL"` または個別帯（例: `"15.0"`、`"17.6+"`） |
+| `stats[].rank` | object | ランク別人数（`aaal`、`s`、`sp`、`ss`、`ssp`、`sss`、`sssp`、`max`） |
+| `stats[].combo` | object | コンボランプ別人数（`none`、`fc`、`aj`） |
+| `stats[].clear` | object | クリアランプ別人数（`failed`、`clear`、`hard`、`brave`、`absolute`、`catastrophy`） |
+| `stats[].average_score` | number \| null | レーティング帯別平均スコア（レコード0件の場合は `null`） |
+| `stats[].player_count` | number | レーティング帯別プレイヤー数 |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `invalid_difficulty` | 400 | 無効な難易度が指定されました |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+| `chart_not_found` | 404 | 指定された難易度の譜面が存在しません |
+
+---
+
+### GET `/v1/worldsend-songs`
+
+全WORLD'S END楽曲を取得します。削除済み楽曲は除外されます。WORLD'S ENDは1曲1譜面です。
+
+**リクエスト**:
+
+```
+GET /v1/worldsend-songs
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "songs": [
+    {
+      "id": "f13e1a1f3285186c",
+      "title": "Garakuta Doll Play (sasakure.UK clutter remix)",
+      "reading": "GARAKUTADOLLPLAYSASAKUREUKCLUTTERREMIX",
+      "artist": "sasakure.UK",
+      "genre": "ORIGINAL",
+      "bpm": 256,
+      "release": "2016-03-17",
+      "jacket": "971c362a9b65209e",
+      "official_idx": "8024",
+      "charts": {
+        "WORLDSEND": {
+          "attribute": "改",
+          "level_star": 4,
+          "notes": 2525,
+          "notes_designer": "チュウニ譜面ボーイズ"
+        }
+      }
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `songs` | array | WORLD'S END楽曲の配列 |
+| `songs[].id` | string | 楽曲の表示用ID |
+| `songs[].title` | string | 楽曲名 |
+| `songs[].reading` | string \| null | 楽曲名の読み |
+| `songs[].artist` | string | アーティスト名 |
+| `songs[].genre` | string \| null | ジャンル名 |
+| `songs[].bpm` | number \| null | BPM |
+| `songs[].release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
+| `songs[].jacket` | string \| null | ジャケット画像ファイル名 |
+| `songs[].official_idx` | string | 公式ID |
+| `songs[].charts` | object | 譜面情報。キーは `"WORLDSEND"` 固定 |
+| `songs[].charts.WORLDSEND.attribute` | string \| null | WORLD'S END属性（光、蔵、改、狂 など） |
+| `songs[].charts.WORLDSEND.level_star` | number \| null | WORLD'S ENDレベル（1～5） |
+| `songs[].charts.WORLDSEND.notes` | number \| null | ノーツ数 |
+| `songs[].charts.WORLDSEND.notes_designer` | string \| null | ノーツデザイナー |
+
+---
+
+### GET `/v1/worldsend-songs/:displayid`
+
+指定されたWORLD'S END楽曲の詳細を取得します。
+
+**リクエスト**:
+
+```
+GET /v1/worldsend-songs/f13e1a1f3285186c
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `displayid` | string | 楽曲の表示用ID |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "id": "f13e1a1f3285186c",
+  "title": "Garakuta Doll Play (sasakure.UK clutter remix)",
+  "reading": "GARAKUTADOLLPLAYSASAKUREUKCLUTTERREMIX",
+  "artist": "sasakure.UK",
+  "genre": "ORIGINAL",
+  "bpm": 256,
+  "release": "2016-03-17",
+  "jacket": "971c362a9b65209e",
+  "official_idx": "8024",
+  "charts": {
+    "WORLDSEND": {
+      "attribute": "改",
+      "level_star": 4,
+      "notes": 2525,
+      "notes_designer": "チュウニ譜面ボーイズ"
+    }
+  }
+}
+```
+
+フィールドの詳細は [GET `/v1/worldsend-songs`](#get-v1worldsend-songs) を参照してください。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+
+---
+
+### GET `/v1/users/:username`
+
+指定されたユーザーのプロフィールとスコアレコードを取得します。
+
+**プライバシーについて**: 非公開設定のユーザーは、本人（APIトークンの所有者）以外からのリクエストに対して `404 Not Found` を返します。プレイヤーデータが未連携の場合は `player` と `records` が `null` になります。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `include_noplay` | boolean | | `true` を指定すると、未プレイ譜面も補完して返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "username": "kjumanenobikto",
+  "player": {
+    "name": "０ｘＦＦ３１",
+    "level": 245,
+    "rating": 17.4632,
+    "class_emblem_id": 6,
+    "class_emblem_base_id": null,
+    "last_played_at": "2026-06-20T22:28:00+09:00",
+    "overpower_value": 103759.74,
+    "overpower_percent": 76.4308,
+    "honors": [
+      { "slot": 1, "name": "Gate of Fate", "type_name": "ultima", "image_url": "honor_bg_ultima.png" },
+      { "slot": 2, "name": "Arcaea", "type_name": "silver", "image_url": "honor_bg_silver.png" },
+      { "slot": 3, "name": "Gate of Doom", "type_name": "expert", "image_url": "honor_bg_expert.png" }
+    ],
+    "created_at": "2026-06-10T21:58:34+09:00",
+    "updated_at": "2026-06-22T08:39:49+09:00"
+  },
+  "records": {
+    "updated_at": "2026-06-21T23:58:02+09:00",
+    "best": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "7c19a08f165d9a9b",
+        "title": "祈 -我ら神祖と共に歩む者なり-",
+        "artist": "光吉猛修 VS 穴山大輔 VS Kai VS 水野健治 VS 大国奏音",
+        "const": 15.7,
+        "is_const_unknown": false,
+        "score": 1008280,
+        "justice_count": null,
+        "rating": 17.77,
+        "overpower": 89.67,
+        "overpower_percent": 95.9037,
+        "img": "aee87c06a25809db",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "best"
+      }
+    ],
+    "best_candidate": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "dd70f42fce1b3247",
+        "title": "Rebellion",
+        "artist": "Kai",
+        "const": 15.4,
+        "is_const_unknown": false,
+        "score": 1007646,
+        "justice_count": null,
+        "rating": 17.41,
+        "overpower": 87.215,
+        "overpower_percent": 94.7989,
+        "img": "f3f526bb5400bcb6",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "best_candidate"
+      }
+    ],
+    "new": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "f57d6fec0d075455",
+        "title": "YOUNITHM",
+        "artist": "大国奏音",
+        "const": 15.5,
+        "is_const_unknown": false,
+        "score": 1008932,
+        "justice_count": null,
+        "rating": 17.64,
+        "overpower": 89.645,
+        "overpower_percent": 96.9135,
+        "img": "a83a089481cb3703",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "new"
+      }
+    ],
+    "new_candidate": [
+      {
+        "updated_at": "2026-06-14T10:17:22+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "0c272957c22a66e0",
+        "title": "Phantom Crisis",
+        "artist": "t+pazolite vs Yuta Imai",
+        "const": 15.5,
+        "is_const_unknown": false,
+        "score": 1005241,
+        "justice_count": null,
+        "rating": 17.04,
+        "overpower": 85.24,
+        "overpower_percent": 92.1514,
+        "img": "691d65ce2e1e4129",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "new_candidate"
+      }
+    ],
+    "standard": [
+      {
+        "updated_at": "2026-06-21T23:58:02+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "5a25917e0249159b",
+        "title": "水晶世界 ～Fracture～",
+        "artist": "wa. remixed celas",
+        "const": 14.9,
+        "is_const_unknown": false,
+        "score": 1009566,
+        "justice_count": 65,
+        "rating": 17.05,
+        "overpower": 88.595,
+        "overpower_percent": 98.9888,
+        "img": "58a8b2d2241876b4",
+        "clear_lamp": "ABSOLUTE",
+        "combo_lamp": "ALL JUSTICE",
+        "full_chain": null,
+        "slot": null
+      }
+    ],
+    "worldsend": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "id": "c953760500a52748",
+        "title": "I Wanna",
+        "artist": "静香(CV.長谷川育美)「ワールドダイスター 夢のステラリウム」",
+        "level_star": 5,
+        "attribute": "招",
+        "notes": 2354,
+        "score": 987816,
+        "justice_count": null,
+        "img": "6cd072470f3b7ef9",
+        "clear_lamp": "CLEAR",
+        "combo_lamp": null,
+        "full_chain": null
+      }
+    ]
+  },
+  "updated_at": "2026-06-22T08:39:49+09:00"
+}
+```
+
+#### トップレベル
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+| `player` | object \| null | プレイヤー情報。未連携の場合は `null` |
+| `records` | object \| null | スコアレコード。未連携の場合は `null` |
+| `updated_at` | string \| null | プレイヤーデータの最終更新日時（ISO8601）。未連携の場合は `null` |
+
+#### `player`
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `name` | string | プレイヤー名 |
+| `level` | number | プレイヤーレベル |
+| `rating` | number | 保存済みスコアから算出したレーティング |
+| `class_emblem_id` | number \| null | クラスエンブレムID |
+| `class_emblem_base_id` | number \| null | クラスエンブレムベースID |
+| `last_played_at` | string \| null | 最終プレイ日時（ISO8601） |
+| `overpower_value` | number \| null | OVER POWER値 |
+| `overpower_percent` | number \| null | OVER POWER達成割合（%） |
+| `honors` | array | 称号情報（スロット1～3） |
+| `honors[].slot` | number | スロット番号 |
+| `honors[].name` | string | 称号名 |
+| `honors[].type_name` | string | 称号タイプ |
+| `honors[].image_url` | string | 称号画像URL |
+| `created_at` | string | プレイヤーデータ作成日時 |
+| `updated_at` | string | プレイヤーデータ更新日時 |
+
+#### `records`
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `updated_at` | string | レコードの最終更新日時 |
+| `best` | array | ベスト枠レコード |
+| `best_candidate` | array | ベスト候補枠レコード |
+| `new` | array | 新曲枠レコード |
+| `new_candidate` | array | 新曲候補枠レコード |
+| `standard` | array | 通常譜面の全レコード |
+| `worldsend` | array | WORLD'S ENDの全レコード |
+
+#### レコード要素（`best` / `best_candidate` / `new` / `new_candidate` / `standard`）
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `is_played` | boolean | プレイ済みかどうか（未プレイ補完データは `false`） |
+| `is_op_target` | boolean | OVER POWER計算の対象譜面かどうか |
+| `updated_at` | string \| null | 更新日時。未プレイ補完データは `null` |
+| `difficulty` | string | 難易度名 |
+| `id` | string | 楽曲の表示用ID |
+| `title` | string | 楽曲名 |
+| `artist` | string | アーティスト名 |
+| `const` | number | 譜面定数 |
+| `is_const_unknown` | boolean | 譜面定数が未確定かどうか |
+| `score` | number | スコア |
+| `justice_count` | number \| null | JUSTICE数 |
+| `rating` | number | 単曲レーティング |
+| `overpower` | number | 単曲OVER POWER値 |
+| `overpower_percent` | number | 単曲OVER POWER達成割合（%） |
+| `img` | string | ジャケット画像ファイル名 |
+| `clear_lamp` | string \| null | クリアランプ |
+| `combo_lamp` | string \| null | コンボランプ |
+| `full_chain` | string \| null | フルチェイン |
+| `slot` | string \| null | スロット |
+
+#### レコード要素（`worldsend`）
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `is_played` | boolean | プレイ済みかどうか |
+| `updated_at` | string \| null | 更新日時 |
+| `id` | string | 楽曲の表示用ID |
+| `title` | string | 楽曲名 |
+| `artist` | string | アーティスト名 |
+| `level_star` | number \| null | WORLD'S ENDレベル |
+| `attribute` | string \| null | WORLD'S END属性 |
+| `notes` | number \| null | ノーツ数 |
+| `score` | number | スコア |
+| `justice_count` | number \| null | JUSTICE数 |
+| `img` | string | ジャケット画像ファイル名 |
+| `clear_lamp` | string \| null | クリアランプ |
+| `combo_lamp` | string \| null | コンボランプ |
+| `full_chain` | string \| null | フルチェイン |
+
+#### プレイヤー未連携時のレスポンス
+
+```json
+{
+  "username": "kjumanenobikto",
+  "player": null,
+  "records": null,
+  "updated_at": null
+}
+```
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
+## chunirec互換API `/compat/chunirec/2.0`
+
+chunirecとの互換性を持つエンドポイントです。`/v1` と同様にAPIトークン認証を使用します。
+
+### GET `/compat/chunirec/2.0/music/showall`
+
+WORLD'S ENDを除く全楽曲をchunirec互換形式で取得します。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/music/showall
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+[
+  {
+    "meta": {
+      "id": "e9e66c56cb8388e9",
+      "title": "GEMINI -C-",
+      "genre": "ORIGINAL",
+      "artist": "Tatsh",
+      "release": "2016-03-17",
+      "bpm": 180
+    },
+    "data": {
+      "BAS": {
+        "level": 4,
+        "const": 4,
+        "maxcombo": 549,
+        "is_const_unknown": false
+      },
+      "ADV": {
+        "level": 7,
+        "const": 7,
+        "maxcombo": 769,
+        "is_const_unknown": false
+      },
+      "EXP": {
+        "level": 11,
+        "const": 11.3,
+        "maxcombo": 1319,
+        "is_const_unknown": false
+      },
+      "MAS": {
+        "level": 14,
+        "const": 14.2,
+        "maxcombo": 1587,
+        "is_const_unknown": false
+      }
+    }
+  }
+]
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `[].meta.id` | string | 楽曲の表示用ID |
+| `[].meta.title` | string | 楽曲名 |
+| `[].meta.genre` | string \| null | ジャンル名 |
+| `[].meta.artist` | string | アーティスト名 |
+| `[].meta.release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
+| `[].meta.bpm` | number \| null | BPM |
+| `[].data.BAS` | object \| null | BASIC譜面 |
+| `[].data.ADV` | object \| null | ADVANCED譜面 |
+| `[].data.EXP` | object \| null | EXPERT譜面 |
+| `[].data.MAS` | object \| null | MASTER譜面 |
+| `[].data.ULT` | object \| null | ULTIMA譜面 |
+| `[].data.*.level` | number | 表記レベル（.0または.5刻み） |
+| `[].data.*.const` | number | 譜面定数 |
+| `[].data.*.maxcombo` | number \| null | ノーツ数 |
+| `[].data.*.is_const_unknown` | boolean | 譜面定数が未確定の場合 `true` |
+
+譜面が存在しない難易度は `null` になります。
+
+---
+
+### GET `/compat/chunirec/2.0/music/show`
+
+指定された1楽曲の情報をchunirec互換形式で取得します。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/music/show?id=e9e66c56cb8388e9
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `id` | string | 必須 | 楽曲の表示用ID（16文字） |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "meta": {
+    "id": "e9e66c56cb8388e9",
+    "title": "GEMINI -C-",
+    "genre": "ORIGINAL",
+    "artist": "Tatsh",
+    "release": "2016-03-17",
+    "bpm": 180
+  },
+  "data": {
+    "BAS": {
+      "level": 4,
+      "const": 4,
+      "maxcombo": 549,
+      "is_const_unknown": false
+    },
+    "ADV": {
+      "level": 7,
+      "const": 7,
+      "maxcombo": 769,
+      "is_const_unknown": false
+    },
+    "EXP": {
+      "level": 11,
+      "const": 11.3,
+      "maxcombo": 1319,
+      "is_const_unknown": false
+    },
+    "MAS": {
+      "level": 14,
+      "const": 14.2,
+      "maxcombo": 1587,
+      "is_const_unknown": false
+    }
+  }
+}
+```
+
+フィールドの詳細は [GET `/compat/chunirec/2.0/music/showall`](#get-compatchunirec20musicshowall) を参照してください。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | クエリパラメータ `id` が未指定です |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+
+---
+
+### GET `/compat/chunirec/2.0/users/show`
+
+指定されたユーザーのプロフィールをchunirec互換形式で取得します。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/users/show?user_name=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `user_name` | string | | 取得対象のユーザー名。未指定の場合はAPIトークン所有者自身のプロフィールを返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "user_id": 1,
+  "player_name": "０ｘＦＦ３１",
+  "title": "Gate of Fate",
+  "title_rarity": "ultima",
+  "level": 245,
+  "rating": "17.46",
+  "rating_max": "17.46",
+  "classemblem": "inf",
+  "classemblem_base": null,
+  "is_joined_team": null,
+  "updated_at": "2026-06-22T08:39:49+09:00"
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `user_id` | number | 内部ユーザーID |
+| `player_name` | string | プレイヤー名 |
+| `title` | string \| null | スロット1の称号 |
+| `title_rarity` | string \| null | スロット1称号のレアリティ |
+| `level` | number | プレイヤーレベル |
+| `rating` | string \| null | レーティング（小数点以下2桁の文字列） |
+| `rating_max` | string \| null | 最大レーティング（現在は `rating` と同じ値） |
+| `classemblem` | string \| null | クラスエンブレム |
+| `classemblem_base` | string \| null | クラスエンブレムベース |
+| `is_joined_team` | null | チーム参加状態（常に `null`） |
+| `updated_at` | string | プレイヤーデータの最終更新日時（RFC3339形式） |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、非公開設定、またはプレイヤーデータ未連携 |

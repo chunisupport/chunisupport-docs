@@ -44,3 +44,11 @@
 .hero .tagline {
   max-width: 42rem;
 }
+
+h2 {
+  font-size: 1.375rem;
+}
+
+h3 {
+  font-size: 1.125rem;
+}
