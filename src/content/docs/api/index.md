@@ -5,8 +5,6 @@ description: ChuniSupport 外部向けAPIのドキュメントです。APIトー
 
 ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプログラムから取得するためのAPIです。すべてのエンドポイントでAPIトークンによる認証が必要です。
 
-## 概要
-
 - **コンテンツタイプ**: すべてのレスポンスは `application/json` です。
 - **文字コード**: UTF-8
 
