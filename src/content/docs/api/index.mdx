@@ -6,7 +6,7 @@ description: ChuniSupport 外部向けAPIのドキュメントです。APIトー
 import ApiBaseUrl from '../../../components/ApiBaseUrl.astro'
 
 
-ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプログラムから取得するためのAPIです。すべてのエンドポイントでAPIトークンによる認証が必要です。
+ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプログラムから取得するためのAPIです。ほとんどのエンドポイントでAPIトークンによる認証が必要です。スコア履歴取得のみAPIトークンは任意です。
 
 - **ベースURL**: <ApiBaseUrl />
 - **コンテンツタイプ**: すべてのレスポンスは `application/json` です。
@@ -14,7 +14,7 @@ ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプロ�
 
 ## 認証
 
-すべてのエンドポイントでAPIトークンが必要です。リクエストヘッダーに以下の形式でトークンを指定してください。
+ほとんどのエンドポイントでAPIトークンが必要です。リクエストヘッダーに以下の形式でトークンを指定してください。
 
 ```
 Authorization: Bearer <APIトークン>
@@ -22,9 +22,13 @@ Authorization: Bearer <APIトークン>
 
 APIトークンはChuniSupportの設定画面から発行できます。
 
+スコア履歴取得（`GET /v1/*/score-history*`）のみAPIトークンは任意です。公開ユーザーは未認証で参照できます。非公開ユーザーのスコア履歴を参照する場合は、本人のAPIトークンを送信してください。
+
+楽曲情報の更新（`PUT /v1/songs`、`PATCH /v1/songs/chart-constant`）には、APIトークン所有者が **EDITOR** または **ADMIN** 権限を持っている必要があります。
+
 ## レートリミット
 
-すべてのエンドポイント共通で、**15分あたり150リクエスト**の制限があります。
+すべてのエンドポイント共通で、**15分あたり150リクエスト**（一般ユーザー）の制限があります。ADMIN権限のトークンは **15分あたり150,000リクエスト** です。
 
 制限を超えた場合は `429 Too Many Requests` が返ります。
 
@@ -54,13 +58,16 @@ APIトークンはChuniSupportの設定画面から発行できます。
 | ------------ | ---- | ---- |
 | `missing_token` | 401 | APIトークンが指定されていません |
 | `invalid_token` | 401 | APIトークンが無効です |
+| `forbidden` | 403 | 権限が不足しています |
 | `too_many_requests` | 429 | レートリミットを超過しました |
 | `not_found` | 404 | 指定されたリソースが見つかりません |
 | `song_not_found` | 404 | 指定された楽曲が見つかりません |
 | `user_not_found` | 404 | 指定されたユーザーが見つかりません |
 | `chart_not_found` | 404 | 指定された難易度の譜面が存在しません |
 | `invalid_difficulty` | 400 | 難易度の指定が無効です |
+| `score_history_unsupported_difficulty` | 400 | スコア履歴非対応の難易度が指定されました |
 | `validation_failed` | 400 | リクエストパラメータが不正です |
+| `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
 | `internal_error` | 500 | サーバー内部エラー |
 
 ---
@@ -181,6 +188,114 @@ Authorization: Bearer <APIトークン>
 | `songs[].charts[key].notes_designer` | string \| null | ノーツデザイナー |
 
 譜面が存在しない難易度は `null` になります。
+
+---
+
+### PUT `/v1/songs`
+
+通常楽曲（WORLD'S ENDを除く）の楽曲情報と譜面情報を一括更新します。既存データの修正専用で、新規追加・削除は行いません。
+
+**権限**: EDITOR または ADMIN
+
+**リクエスト**:
+
+```
+PUT /v1/songs
+Authorization: Bearer <APIトークン>
+Content-Type: application/json
+```
+
+```json
+[
+  {
+    "id": "e9e66c56cb8388e9",
+    "title": "GEMINI -C-",
+    "reading": "GEMINIC",
+    "artist": "Tatsh",
+    "genre": "ORIGINAL",
+    "bpm": 180,
+    "released_at": "2016-03-17",
+    "jacket": "45112e2818cf80a2",
+    "charts": {
+      "MASTER": {
+        "const": 14.2,
+        "is_const_unknown": false,
+        "notes": 1587,
+        "notes_designer": "rio -N-"
+      }
+    }
+  }
+]
+```
+
+| フィールド | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `[].id` | string | ✓ | 楽曲の表示用ID（16文字の小文字16進数） |
+| `[].title` | string | ✓ | 楽曲名 |
+| `[].reading` | string \| null | | 楽曲名の読み |
+| `[].artist` | string | ✓ | アーティスト名 |
+| `[].genre` | string \| null | | ジャンル名 |
+| `[].bpm` | number \| null | | BPM |
+| `[].released_at` | string \| null | | リリース日（`YYYY-MM-DD` 形式） |
+| `[].jacket` | string \| null | | ジャケット画像ファイル名 |
+| `[].charts` | object | | 譜面情報のマップ。キーは `BASIC`、`ADVANCED`、`EXPERT`、`MASTER`、`ULTIMA` |
+| `[].charts[key].const` | number | ✓ | 譜面定数 |
+| `[].charts[key].is_const_unknown` | boolean | ✓ | 譜面定数が未確定の場合 `true` |
+| `[].charts[key].notes` | number \| null | | ノーツ数 |
+| `[].charts[key].notes_designer` | string \| null | | ノーツデザイナー |
+
+**レスポンス**: 204 No Content
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | リクエストパラメータが不正です |
+| `forbidden` | 403 | 権限が不足しています（EDITOR以上が必要） |
+
+---
+
+### PATCH `/v1/songs/chart-constant`
+
+通常楽曲の既存譜面について、公式ID・難易度名の先頭3文字・譜面定数だけを指定して更新します。更新後は `is_const_unknown` が `false` になります。
+
+**権限**: EDITOR または ADMIN
+
+**リクエスト**:
+
+```
+PATCH /v1/songs/chart-constant
+Authorization: Bearer <APIトークン>
+Content-Type: application/json
+```
+
+```json
+{
+  "official_idx": "202",
+  "difficulty": "MAS",
+  "const": 14.7
+}
+```
+
+| フィールド | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `official_idx` | string | ✓ | 公式ID（最大10文字） |
+| `difficulty` | string | ✓ | 難易度名の先頭3文字。`BAS` / `ADV` / `EXP` / `MAS` / `ULT`（大文字・小文字を区別しない） |
+| `const` | number | ✓ | 譜面定数（0.0～16.0、小数第1位まで） |
+
+**レスポンス**: 200 OK
+
+更新後の楽曲オブジェクトを返します。フィールドの詳細は [GET `/v1/songs/:displayid`](#get-v1songsdisplayid) を参照してください。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | リクエストパラメータが不正です |
+| `invalid_difficulty` | 400 | 難易度または譜面定数が不正です |
+| `forbidden` | 403 | 権限が不足しています（EDITOR以上が必要） |
+| `song_not_found` | 404 | 公式IDに対応する通常楽曲が見つかりません |
+| `chart_not_found` | 404 | 対象難易度の譜面が存在しません |
 
 ---
 
@@ -362,6 +477,75 @@ Authorization: Bearer <APIトークン>
 
 ---
 
+### GET `/v1/songs/:displayid/score-history/:difficulty`
+
+指定楽曲の指定難易度におけるスコア履歴を取得します。各譜面の現行ベストと過去のベストを新しい順で返します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
+
+**認証**: APIトークン（任意）。公開ユーザーは未認証で参照できます。非公開ユーザーは本人（APIトークンの所有者）のみ参照できます。
+
+**リクエスト**:
+
+```
+GET /v1/songs/5a9ab66f9aea05d3/score-history/master?username=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `displayid` | string | 楽曲の表示用ID（16文字） |
+| `difficulty` | string | 難易度名（小文字）: `expert`、`master`、`ultima` |
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `username` | string | ✓ | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "entries": [
+    {
+      "score": 1009566,
+      "clear_lamp": "ABSOLUTE",
+      "combo_lamp": "ALL JUSTICE",
+      "full_chain": null,
+      "updated_at": "2026-06-21T23:58:02+09:00"
+    },
+    {
+      "score": 1008280,
+      "clear_lamp": "HARD",
+      "combo_lamp": null,
+      "full_chain": null,
+      "updated_at": "2026-06-10T21:58:32+09:00"
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `entries` | array | スコア履歴エントリの配列（新しい順） |
+| `entries[].score` | number | スコア |
+| `entries[].clear_lamp` | string \| null | クリアランプ名称 |
+| `entries[].combo_lamp` | string \| null | コンボランプ名称 |
+| `entries[].full_chain` | string \| null | フルチェイン名称 |
+| `entries[].updated_at` | string | 更新日時（ISO8601） |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | `username` が未指定です |
+| `score_history_unsupported_difficulty` | 400 | `expert`、`master`、`ultima` 以外の難易度が指定されました |
+| `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
 ### GET `/v1/worldsend-songs`
 
 全WORLD'S END楽曲を取得します。削除済み楽曲は除外されます。WORLD'S ENDは1曲1譜面です。
@@ -469,6 +653,45 @@ Authorization: Bearer <APIトークン>
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
 | `song_not_found` | 404 | 指定された楽曲が見つかりません |
+
+---
+
+### GET `/v1/worldsend-songs/:displayid/score-history`
+
+指定WORLD'S END楽曲のスコア履歴を取得します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
+
+**認証**: APIトークン（任意）。公開ユーザーは未認証で参照できます。非公開ユーザーは本人（APIトークンの所有者）のみ参照できます。
+
+**リクエスト**:
+
+```
+GET /v1/worldsend-songs/c953760500a52748/score-history?username=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `displayid` | string | WORLD'S END楽曲の表示用ID |
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `username` | string | ✓ | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+レスポンス形式は [GET `/v1/songs/:displayid/score-history/:difficulty`](#get-v1songsdisplayidscore-historydifficulty) と同一です。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | `username` が未指定です |
+| `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
 
 ---
 
