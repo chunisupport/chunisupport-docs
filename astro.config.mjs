@@ -40,6 +40,8 @@ export default defineConfig({
             customCss: ['./src/styles/custom.css'],
             components: {
                 Sidebar: './src/components/SectionSidebar.astro',
+                ThemeProvider: './src/components/ThemeProvider.astro',
+                ThemeSelect: './src/components/ThemeSelect.astro',
             },
             sidebar: [
                 {

@@ -1,37 +1,309 @@
+/*
+ * ChuniSupport 本体（chunisupport-front）の tailwind.css で使用しているカラーテーマを
+ * Astro Starlight 用に移植したもの。
+ *
+ * - 他ディレクトリを参照せず、このファイル単体で完結させるため
+ *   Tailwind パレット（*-50〜*-900）とフロントの独自サーフェス色を直接ハードコードしている。
+ * - テーマ（data-cs-theme）とアクセント（data-accent）の切替 UI は
+ *   src/components/ThemeSelect.astro / AccentSelect.astro で提供する。
+ *   Starlight 標準の light/dark 基盤（data-theme）は維持したまま、
+ *   data-cs-theme で具体的な配色を上書きする 2 層構成。
+ *
+ * ── 設計方針 ─────────────────────────────────────────────
+ * Starlight は --sl-color-{white,gray-1..6,black,accent*} の 3 系統からサイト全体の
+ * 配色を導出する。フロントの --cs-color-* トークンを次の対応で流し込む:
+ *   --sl-color-white  … 見出し/最も明るいテキスト (cs-text 相当)
+ *   --sl-color-gray-2 … 本文テキスト (cs-text-muted)
+ *   --sl-color-gray-3 … 補助テキスト (cs-text-subtle)
+ *   --sl-color-gray-5 … 枠線 (cs-border)
+ *   --sl-color-gray-6 … ナビ/サイドバー背景 (cs-surface)
+ *   --sl-color-black  … ページ背景 (cs-bg)
+ *   --sl-color-accent{,-low,-high} … アクセント (data-accent 由来)
+ */
+
+/* =========================================================================
+ * Tailwind パレット（フロントが依存する色相のみ抜粋）
+ * data-accent で参照するため CSS 変数として定義しておく。
+ * ========================================================================= */
 :root {
-  color-scheme: dark;
+  --color-white: #ffffff;
+
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-200: #bbf7d0;
+  --color-green-300: #86efac;
+  --color-green-400: #4ade80;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
+  --color-green-800: #166534;
+  --color-green-900: #14532d;
+
+  --color-orange-50: #fff7ed;
+  --color-orange-100: #ffedd5;
+  --color-orange-200: #fed7aa;
+  --color-orange-300: #fdba74;
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-orange-700: #c2410c;
+  --color-orange-800: #9a3412;
+  --color-orange-900: #7c2d12;
+
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-200: #ddd6fe;
+  --color-violet-300: #c4b5fd;
+  --color-violet-400: #a78bfa;
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-violet-700: #6d28d9;
+  --color-violet-800: #5b21b6;
+  --color-violet-900: #4c1d95;
+
+  --color-yellow-50: #fefce8;
+  --color-yellow-100: #fef9c3;
+  --color-yellow-200: #fef08a;
+  --color-yellow-300: #fde047;
+  --color-yellow-400: #facc15;
+  --color-yellow-500: #eab308;
+  --color-yellow-600: #ca8a04;
+  --color-yellow-700: #a16207;
+  --color-yellow-800: #854d0e;
+  --color-yellow-900: #713f12;
+
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-red-800: #991b1b;
+  --color-red-900: #7f1d1d;
+}
+
+/* =========================================================================
+ * アクセントカラー（data-accent）
+ * フロントの --cs-color-accent-* → Tailwind パレットへの接続を再現する。
+ * 既定は green。
+ * ========================================================================= */
+:root,
+[data-accent='green'] {
+  --cs-color-accent-50: var(--color-green-50);
+  --cs-color-accent-100: var(--color-green-100);
+  --cs-color-accent-200: var(--color-green-200);
+  --cs-color-accent-300: var(--color-green-300);
+  --cs-color-accent-400: var(--color-green-400);
+  --cs-color-accent-500: var(--color-green-500);
+  --cs-color-accent-600: var(--color-green-600);
+  --cs-color-accent-700: var(--color-green-700);
+  --cs-color-accent-800: var(--color-green-800);
+  --cs-color-accent-900: var(--color-green-900);
+}
+
+[data-accent='orange'] {
+  --cs-color-accent-50: var(--color-orange-50);
+  --cs-color-accent-100: var(--color-orange-100);
+  --cs-color-accent-200: var(--color-orange-200);
+  --cs-color-accent-300: var(--color-orange-300);
+  --cs-color-accent-400: var(--color-orange-400);
+  --cs-color-accent-500: var(--color-orange-500);
+  --cs-color-accent-600: var(--color-orange-600);
+  --cs-color-accent-700: var(--color-orange-700);
+  --cs-color-accent-800: var(--color-orange-800);
+  --cs-color-accent-900: var(--color-orange-900);
+}
+
+[data-accent='blue'] {
+  --cs-color-accent-50: var(--color-blue-50);
+  --cs-color-accent-100: var(--color-blue-100);
+  --cs-color-accent-200: var(--color-blue-200);
+  --cs-color-accent-300: var(--color-blue-300);
+  --cs-color-accent-400: var(--color-blue-400);
+  --cs-color-accent-500: var(--color-blue-500);
+  --cs-color-accent-600: var(--color-blue-600);
+  --cs-color-accent-700: var(--color-blue-700);
+  --cs-color-accent-800: var(--color-blue-800);
+  --cs-color-accent-900: var(--color-blue-900);
+}
+
+[data-accent='violet'] {
+  --cs-color-accent-50: var(--color-violet-50);
+  --cs-color-accent-100: var(--color-violet-100);
+  --cs-color-accent-200: var(--color-violet-200);
+  --cs-color-accent-300: var(--color-violet-300);
+  --cs-color-accent-400: var(--color-violet-400);
+  --cs-color-accent-500: var(--color-violet-500);
+  --cs-color-accent-600: var(--color-violet-600);
+  --cs-color-accent-700: var(--color-violet-700);
+  --cs-color-accent-800: var(--color-violet-800);
+  --cs-color-accent-900: var(--color-violet-900);
+}
+
+[data-accent='yellow'] {
+  --cs-color-accent-50: var(--color-yellow-50);
+  --cs-color-accent-100: var(--color-yellow-100);
+  --cs-color-accent-200: var(--color-yellow-200);
+  --cs-color-accent-300: var(--color-yellow-300);
+  --cs-color-accent-400: var(--color-yellow-400);
+  --cs-color-accent-500: var(--color-yellow-500);
+  --cs-color-accent-600: var(--color-yellow-600);
+  --cs-color-accent-700: var(--color-yellow-700);
+  --cs-color-accent-800: var(--color-yellow-800);
+  --cs-color-accent-900: var(--color-yellow-900);
+}
+
+[data-accent='red'] {
+  --cs-color-accent-50: var(--color-red-50);
+  --cs-color-accent-100: var(--color-red-100);
+  --cs-color-accent-200: var(--color-red-200);
+  --cs-color-accent-300: var(--color-red-300);
+  --cs-color-accent-400: var(--color-red-400);
+  --cs-color-accent-500: var(--color-red-500);
+  --cs-color-accent-600: var(--color-red-600);
+  --cs-color-accent-700: var(--color-red-700);
+  --cs-color-accent-800: var(--color-red-800);
+  --cs-color-accent-900: var(--color-red-900);
+}
+
+/* =========================================================================
+ * 共通のフォント・レイアウト設定
+ * ========================================================================= */
+:root {
   --sl-font: 'Inter', 'Noto Sans', 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
   --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
   --sl-content-width: 50rem;
-  --sl-color-accent-low: #14532d;
-  --sl-color-accent: #4ade80;
-  --sl-color-accent-high: #dcfce7;
-  --sl-color-white: #f9fafb;
-  --sl-color-gray-1: #e5e7eb;
-  --sl-color-gray-2: #d1d5db;
-  --sl-color-gray-3: #9ca3af;
-  --sl-color-gray-4: #6b7280;
-  --sl-color-gray-5: #1d4a39;
-  --sl-color-gray-6: #082018;
-  --sl-color-black: #03150f;
 }
 
-:root[data-theme='light'] {
-  color-scheme: light;
-  --sl-color-accent-low: #dcfce7;
-  --sl-color-accent: #16a34a;
-  --sl-color-accent-high: #14532d;
-  --sl-color-white: #111827;
-  --sl-color-gray-1: #1f2937;
-  --sl-color-gray-2: #4b5563;
-  --sl-color-gray-3: #6b7280;
-  --sl-color-gray-4: #9ca3af;
-  --sl-color-gray-5: #e5e7eb;
-  --sl-color-gray-6: #f3f4f6;
-  --sl-color-gray-7: #f9fafb;
-  --sl-color-black: #ffffff;
+/* =========================================================================
+ * テーマ（data-cs-theme）ごとの Starlight カラー割当
+ *
+ * 陰影・境界線・インラインコード背景など Starlight が light/dark 基盤で
+ * 定義する値を活かすため、DOM には次の 2 属性を同時に付与する:
+ *   data-theme     … 'light' | 'dark'（Starlight の基盤配色を選択）
+ *   data-cs-theme  … 'light' | 'dark' | 'black' | 'dark-blue' | 'pastel-orange'
+ *                    （フロント由来の具体的な配色をこの層で上書き）
+ * ここでは data-cs-theme に対してフロントの各テーマ値を割り当てる。
+ * ========================================================================= */
+
+/* ---- 全テーマ共通：アクセントを --sl-color-accent 系へ接続 ---- */
+:root[data-cs-theme] {
+  --sl-color-accent-low: var(--cs-color-accent-900);
+  --sl-color-accent: var(--cs-color-accent-400);
+  --sl-color-accent-high: var(--cs-color-accent-100);
 }
 
+:root[data-cs-theme='light'],
+:root[data-cs-theme='pastel-orange'] {
+  --sl-color-accent-low: var(--cs-color-accent-100);
+  --sl-color-accent: var(--cs-color-accent-600);
+  --sl-color-accent-high: var(--cs-color-accent-900);
+}
+
+/* ---- light（フロント data-theme="light"） ---- */
+:root[data-cs-theme='light'] {
+  --sl-color-white: var(--color-gray-900); /* cs-text */
+  --sl-color-gray-1: var(--color-gray-800);
+  --sl-color-gray-2: var(--color-gray-600); /* cs-text-muted */
+  --sl-color-gray-3: var(--color-gray-500); /* cs-text-subtle */
+  --sl-color-gray-4: var(--color-gray-400); /* cs-border-strong */
+  --sl-color-gray-5: var(--color-gray-300); /* cs-border */
+  --sl-color-gray-6: var(--color-gray-100); /* cs-surface-muted */
+  --sl-color-gray-7: var(--color-gray-50);
+  --sl-color-black: var(--color-white); /* cs-bg */
+
+  --sl-color-bg-sidebar: var(--color-gray-50);
+}
+
+/* ---- dark（フロント data-theme="dark"：既定 / ダーク緑） ---- */
+:root,
+:root[data-cs-theme='dark'] {
+  --sl-color-white: var(--color-gray-50); /* cs-text */
+  --sl-color-gray-1: var(--color-gray-200);
+  --sl-color-gray-2: var(--color-gray-300); /* cs-text-muted */
+  --sl-color-gray-3: var(--color-gray-500); /* cs-text-subtle */
+  --sl-color-gray-4: #2f6b53; /* cs-border-strong */
+  --sl-color-gray-5: #1d4a39; /* cs-border */
+  --sl-color-gray-6: #082018; /* cs-surface */
+  --sl-color-black: #03150f; /* cs-bg */
+
+  --sl-color-bg-nav: #082018;
+  --sl-color-bg-sidebar: #082018;
+}
+
+/* ---- black（フロント data-theme="black"：ニュートラルな漆黒） ---- */
+:root[data-cs-theme='black'] {
+  --sl-color-white: var(--color-gray-50);
+  --sl-color-gray-1: var(--color-gray-200);
+  --sl-color-gray-2: var(--color-gray-300);
+  --sl-color-gray-3: var(--color-gray-500);
+  --sl-color-gray-4: #666666; /* cs-border-strong */
+  --sl-color-gray-5: #444444; /* cs-border */
+  --sl-color-gray-6: #181818; /* cs-surface */
+  --sl-color-black: #111111; /* cs-bg */
+
+  --sl-color-bg-nav: #181818;
+  --sl-color-bg-sidebar: #181818;
+}
+
+/* ---- dark-blue（フロント data-theme="dark-blue"：紺色ダーク） ---- */
+:root[data-cs-theme='dark-blue'] {
+  --sl-color-white: var(--color-gray-50);
+  --sl-color-gray-1: var(--color-gray-200);
+  --sl-color-gray-2: var(--color-gray-300);
+  --sl-color-gray-3: var(--color-gray-500);
+  --sl-color-gray-4: #2f4480; /* cs-border-strong */
+  --sl-color-gray-5: #1e2d5e; /* cs-border */
+  --sl-color-gray-6: #0f1526; /* cs-surface */
+  --sl-color-black: #0a0e1a; /* cs-bg */
+
+  --sl-color-bg-nav: #0f1526;
+  --sl-color-bg-sidebar: #0f1526;
+}
+
+/* ---- pastel-orange（フロント data-theme="pastel-orange"：淡いオレンジのライト） ---- */
+:root[data-cs-theme='pastel-orange'] {
+  --sl-color-white: #3d2e24; /* cs-text */
+  --sl-color-gray-1: #4a382c;
+  --sl-color-gray-2: var(--color-gray-600); /* cs-text-muted */
+  --sl-color-gray-3: var(--color-gray-500); /* cs-text-subtle */
+  --sl-color-gray-4: #ecc09f; /* cs-border-strong */
+  --sl-color-gray-5: #f5d5bc; /* cs-border */
+  --sl-color-gray-6: #fceddc; /* cs-surface-muted */
+  --sl-color-gray-7: #fef6eb;
+  --sl-color-black: #fcf0e0; /* cs-bg */
+
+  --sl-color-bg-nav: #fef6eb;
+  --sl-color-bg-sidebar: #fef6eb;
+}
+
+/* =========================================================================
+ * 既存のカスタム調整
+ * ========================================================================= */
 :where(a, button, input):focus-visible {
   outline: 3px solid var(--sl-color-accent);
   outline-offset: 3px;

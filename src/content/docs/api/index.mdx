@@ -987,7 +987,7 @@ Authorization: Bearer <APIトークン>
 
 ## chunirec互換API `/compat/chunirec/2.0`
 
-chunirecとの互換性を持つエンドポイントです。`/v1` と同様にAPIトークン認証を使用します。
+chunirecとの互換性を持つエンドポイントです。`/v1` と同様にAPIトークン認証を使用します。ここで返すIDはChuniSupportのIDであり、chunirecのIDとは異なります。他のchunirec互換APIとあわせて利用してください。
 
 ### GET `/compat/chunirec/2.0/music/showall`
 
@@ -1134,6 +1134,76 @@ Authorization: Bearer <APIトークン>
 
 ---
 
+### GET `/compat/chunirec/2.0/records/showall`
+
+指定したユーザーの通常譜面のプレイ済みレコードを、chunirec互換形式で取得します。未プレイ譜面とWORLD'S END譜面は含まれません。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/records/showall?user_name=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `user_name` | string | | 取得対象のユーザー名。未指定の場合はAPIトークン所有者自身のレコードを返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "records": [
+    {
+      "id": "6a88218b1a936bd3",
+      "diff": "EXP",
+      "level": 10,
+      "title": "B.B.K.K.B.K.K.",
+      "const": 10,
+      "score": 1003215,
+      "rating": 11.32,
+      "is_const_unknown": true,
+      "is_clear": true,
+      "is_fullcombo": false,
+      "is_alljustice": false,
+      "is_fullchain": false,
+      "genre": "VARIETY",
+      "updated_at": "1970-01-01T09:00:00+0900",
+      "is_played": true
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `records` | array | 通常譜面のプレイ済みレコード一覧 |
+| `records[].id` | string | 楽曲の識別ID（16桁） |
+| `records[].diff` | string | 難易度（`BAS`、`ADV`、`EXP`、`MAS`、`ULT`） |
+| `records[].level` | number | 表記レベル（.0または.5刻み） |
+| `records[].title` | string | 楽曲名 |
+| `records[].const` | number | 譜面定数 |
+| `records[].score` | number | スコア |
+| `records[].rating` | number | 単曲レーティング |
+| `records[].is_const_unknown` | boolean | 譜面定数が未確定の場合 `true` |
+| `records[].is_clear` | boolean | クリアランプが付いている場合 `true` |
+| `records[].is_fullcombo` | boolean | コンボランプがFULL COMBOまたはALL JUSTICEの場合 `true` |
+| `records[].is_alljustice` | boolean | コンボランプがALL JUSTICEの場合 `true` |
+| `records[].is_fullchain` | boolean | フルチェインランプが付いている場合 `true` |
+| `records[].genre` | string | ジャンル名 |
+| `records[].updated_at` | string | レコード更新日時（`YYYY-MM-DDTHH:mm:ss+0900`形式） |
+| `records[].is_played` | boolean | 常に `true` |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つかりません（非公開ユーザーを含む） |
+
+---
+
 ### GET `/compat/chunirec/2.0/users/show`
 
 指定されたユーザーのプロフィールをchunirec互換形式で取得します。
@@ -1188,3 +1258,62 @@ Authorization: Bearer <APIトークン>
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
 | `user_not_found` | 404 | ユーザーが見つからない、非公開設定、またはプレイヤーデータ未連携 |
+
+---
+
+## reiwa互換API `/compat/reiwa/1`
+
+reiwa互換APIは外部ツールとの互換性を持つエンドポイントです。APIトークン認証を使用します。
+
+### GET `/compat/reiwa/1/chunithm_record/original`
+
+WORLD'S ENDを除く全楽曲の通常譜面情報を、譜面単位のフラットな配列で取得します。削除済み楽曲は含まれません。
+
+**リクエスト**:
+
+```
+GET /compat/reiwa/1/chunithm_record/original
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+[
+  {
+    "title": "B.B.K.K.B.K.K.",
+    "artist": "nora2r",
+    "img": "d739ba44da6798a0",
+    "genre": "VARIETY",
+    "const": 4,
+    "level": 4,
+    "diff": "BAS",
+    "notes": 333,
+    "unknown": 0,
+    "chunirec_id": "6a88218b1a936bd3",
+    "idx": "3",
+    "bpm": 170,
+    "release": 14370588,
+    "version": ""
+  }
+]
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `title` | string | 楽曲タイトル |
+| `artist` | string | アーティスト名 |
+| `img` | string | ジャケット画像識別子 |
+| `genre` | string | ジャンル名（`POPS&ANIME` は `POPS & ANIME` に変換） |
+| `const` | number | 譜面定数 |
+| `level` | number | 表記レベル（.5区切り。例: 13+ → 13.5） |
+| `diff` | string | 難易度（`BAS`、`ADV`、`EXP`、`MAS`、`ULT`） |
+| `notes` | number | ノーツ数 |
+| `unknown` | number | 譜面定数不明フラグ（0: 既知、1: 不明） |
+| `chunirec_id` | string | 楽曲の内部ID |
+| `idx` | string | 公式インデックス |
+| `bpm` | number | BPM |
+| `release` | number | リリース日のJST 0時Unixタイムスタンプ ÷ 100 |
+| `version` | string | バージョン名から `CHUNITHM ` を除去した名称（初代CHUNITHMは空文字） |
+
+`idx` の数値昇順、次に難易度順（BAS → ADV → EXP → MAS → ULT）で返します。

@@ -1,0 +1,75 @@
+---
+/*
+ * Starlight の ThemeSelect をオーバーライドし、フロント由来の
+ * 5 テーマ（light/dark/black/dark-blue/pastel-orange）と
+ * 6 アクセント（green/orange/blue/violet/yellow/red）を選択できるようにする。
+ *
+ * 実際の適用ロジックは ThemeProvider.astro の window.CsDocsTheme に集約している。
+ */
+import Select from '@astrojs/starlight/components/Select.astro';
+---
+
+<starlight-cs-theme-select class="cs-theme-controls">
+	<Select
+		icon="laptop"
+		label="配色テーマ"
+		options={[
+			{ label: 'ライト', selected: false, value: 'light' },
+			{ label: 'ダーク', selected: true, value: 'dark' },
+			{ label: 'ブラック', selected: false, value: 'black' },
+			{ label: 'ダークブルー', selected: false, value: 'dark-blue' },
+			{ label: 'パステルオレンジ', selected: false, value: 'pastel-orange' },
+		]}
+		width="9.5em"
+	/>
+	<Select
+		icon="pen"
+		label="アクセントカラー"
+		options={[
+			{ label: 'グリーン', selected: true, value: 'green' },
+			{ label: 'オレンジ', selected: false, value: 'orange' },
+			{ label: 'ブルー', selected: false, value: 'blue' },
+			{ label: 'バイオレット', selected: false, value: 'violet' },
+			{ label: 'イエロー', selected: false, value: 'yellow' },
+			{ label: 'レッド', selected: false, value: 'red' },
+		]}
+		width="7.5em"
+	/>
+</starlight-cs-theme-select>
+
+<style>
+	.cs-theme-controls {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+</style>
+
+<script>
+	class StarlightCsThemeSelect extends HTMLElement {
+		constructor() {
+			super();
+			const api = (window as any).CsDocsTheme;
+			if (!api) return;
+
+			const selects = this.querySelectorAll('select');
+			const themeSelect = selects[0] as HTMLSelectElement | undefined;
+			const accentSelect = selects[1] as HTMLSelectElement | undefined;
+
+			// 現在値を UI に反映
+			if (themeSelect) themeSelect.value = api.loadTheme();
+			if (accentSelect) accentSelect.value = api.loadAccent();
+
+			themeSelect?.addEventListener('change', (e) => {
+				const target = e.currentTarget;
+				if (target instanceof HTMLSelectElement) api.setTheme(target.value);
+			});
+			accentSelect?.addEventListener('change', (e) => {
+				const target = e.currentTarget;
+				if (target instanceof HTMLSelectElement) api.setAccent(target.value);
+			});
+		}
+	}
+	customElements.define('starlight-cs-theme-select', StarlightCsThemeSelect);
+</script>

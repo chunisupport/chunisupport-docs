@@ -1,0 +1,72 @@
+---
+/*
+ * Starlight の ThemeProvider をオーバーライドし、フロント由来の
+ * data-cs-theme（具体テーマ）と data-accent（アクセント）を
+ * <head> 内インラインで適用する（FOUC 防止）。
+ *
+ * data-theme（Starlight の light/dark 基盤）は data-cs-theme から導出する。
+ * 実際の配色割当は src/styles/custom.css を参照。
+ */
+---
+
+{/* FOUC を避けるため意図的にインライン展開する */}
+<script is:inline>
+	window.CsDocsTheme = (() => {
+		const themeKey = 'cs-docs-theme';
+		const accentKey = 'cs-docs-accent';
+		const themes = ['light', 'dark', 'black', 'dark-blue', 'pastel-orange'];
+		const accents = ['green', 'orange', 'blue', 'violet', 'yellow', 'red'];
+
+		/** data-cs-theme から Starlight の light/dark 基盤を導出する。 */
+		const baseOf = (theme) => (theme === 'light' || theme === 'pastel-orange' ? 'light' : 'dark');
+
+		const read = (key) => {
+			try {
+				return typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+			} catch {
+				return null;
+			}
+		};
+		const write = (key, value) => {
+			try {
+				if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
+			} catch {}
+		};
+
+		const preferredTheme = () =>
+			matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+		const loadTheme = () => {
+			const stored = read(themeKey);
+			return themes.includes(stored) ? stored : preferredTheme();
+		};
+		const loadAccent = () => {
+			const stored = read(accentKey);
+			return accents.includes(stored) ? stored : 'green';
+		};
+
+		/** DOM へテーマ/アクセントを適用する。 */
+		const apply = (theme, accent) => {
+			const root = document.documentElement;
+			root.dataset.csTheme = theme;
+			root.dataset.theme = baseOf(theme);
+			root.dataset.accent = accent;
+		};
+
+		const setTheme = (theme) => {
+			const next = themes.includes(theme) ? theme : preferredTheme();
+			write(themeKey, next);
+			apply(next, loadAccent());
+		};
+		const setAccent = (accent) => {
+			const next = accents.includes(accent) ? accent : 'green';
+			write(accentKey, next);
+			apply(loadTheme(), next);
+		};
+
+		// 初期適用
+		apply(loadTheme(), loadAccent());
+
+		return { themeKey, accentKey, themes, accents, baseOf, loadTheme, loadAccent, setTheme, setAccent };
+	})();
+</script>
