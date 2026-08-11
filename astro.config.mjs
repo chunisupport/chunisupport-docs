@@ -1,8 +1,12 @@
 import { defineConfig, envField } from 'astro/config'
 import starlight from '@astrojs/starlight'
+import { loadEnv } from 'vite'
+
+const DEFAULT_SITE_URL = 'https://docs.chunisupport.net'
+const { SITE_URL = DEFAULT_SITE_URL } = loadEnv(process.env.NODE_ENV, process.cwd(), '')
 
 export default defineConfig({
-    site: 'https://docs.chunisupport.net',
+    site: SITE_URL,
     output: 'static',
     env: {
         schema: {

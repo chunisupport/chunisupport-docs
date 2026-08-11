@@ -1183,7 +1183,11 @@ Authorization: Bearer <APIトークン>
 
 ## chunirec互換API `/compat/chunirec/2.0`
 
-chunirecとの互換性を持つエンドポイントです。`/v1` と同様にAPIトークン認証を使用します。ここで返すIDはChuniSupportのIDであり、chunirecのIDとは異なります。他のchunirec互換APIとあわせて利用してください。
+chunirecとの互換性を持つエンドポイントです。`/v1` と同様にAPIトークン認証を使用します。
+
+:::caution
+楽曲IDにはChuniSupportのIDを使用してください。chunirecで使用されている楽曲IDとは異なるため、chunirecの楽曲IDを指定しても正しく動作しません。楽曲IDは、このセクションに記載されている他のchunirec互換APIから取得できます。
+:::
 
 ### GET `/compat/chunirec/2.0/music/showall`
 

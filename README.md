@@ -34,11 +34,15 @@ Cloudflare PagesでGitリポジトリを接続し、次の値を設定します�
 | Build command | `npm run build` |
 | Build output directory | `dist` |
 | Environment variable | `NODE_VERSION=22.12.0` |
+| Environment variable | `SITE_URL=https://docs.chunisupport.net` |
 
 このサイトは静的出力です。Cloudflare Workers用のAstroアダプターやWrangler設定は使用しません。
 
+develop環境では、ビルド時の環境変数を`SITE_URL=https://develop.chunisupport-docs.pages.dev`に変更します。
+
 ## 環境変数
 
+- `SITE_URL`: サイトの公開URL。お知らせフィード内のリンク生成などに使用します。
 - `PUBLIC_BOOKMARKLET_URL`: JavaScriptファイルを配信するベースURL
 - `PUBLIC_BOOKMARKLET_ENTRYPOINT`: 読み込むJavaScriptファイル名
 
