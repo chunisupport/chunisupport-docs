@@ -1,0 +1,108 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import {
+  ANNOUNCEMENT_CATEGORY_LABELS,
+  announcementPath,
+  formatAnnouncementDate,
+  getAnnouncements,
+} from '../../lib/announcements'
+
+const announcements = await getAnnouncements()
+---
+
+<StarlightPage
+  hasSidebar={false}
+  frontmatter={{
+    title: 'お知らせ',
+    tableOfContents: false,
+    description: 'ChuniSupportの更新、メンテナンス、重要なご案内を掲載します。',
+  }}
+>
+  {
+    announcements.length === 0 ? (
+      <p>現在、お知らせはありません。</p>
+    ) : (
+      <ol class="announcement-list">
+        {announcements.map((announcement) => (
+          <li>
+            <article>
+              <div class="announcement-meta">
+                <span class={`announcement-category category-${announcement.data.category}`}>
+                  {ANNOUNCEMENT_CATEGORY_LABELS[announcement.data.category]}
+                </span>
+                <time datetime={announcement.data.publishedAt.toISOString().slice(0, 10)}>
+                  {formatAnnouncementDate(announcement.data.publishedAt)}
+                </time>
+              </div>
+              <h2>
+                <a href={announcementPath(announcement.id)}>{announcement.data.title}</a>
+              </h2>
+              <p>{announcement.data.summary}</p>
+            </article>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</StarlightPage>
+
+<style>
+  .announcement-list {
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .announcement-list article {
+    padding: 1.25rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+  }
+
+  .announcement-list h2 {
+    margin-block: 0.5rem 0.25rem;
+    font-size: var(--sl-text-h3);
+  }
+
+  .announcement-list p {
+    margin: 0;
+    color: var(--sl-color-gray-2);
+  }
+
+  .announcement-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+
+  .announcement-category {
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+    color: var(--sl-color-white);
+    background: var(--sl-color-gray-6);
+    font-weight: 600;
+  }
+
+  .category-important {
+    border-color: var(--sl-color-red-low);
+    color: var(--sl-color-red-high);
+    background: var(--sl-color-red-low);
+  }
+
+  .category-update {
+    border-color: var(--sl-color-blue-low);
+    color: var(--sl-color-blue-high);
+    background: var(--sl-color-blue-low);
+  }
+
+  .category-maintenance {
+    border-color: var(--sl-color-orange-low);
+    color: var(--sl-color-orange-high);
+    background: var(--sl-color-orange-low);
+  }
+</style>

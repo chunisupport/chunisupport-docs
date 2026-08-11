@@ -1,0 +1,2 @@
+/changelog /announcements/ 301
+/changelog/* /announcements/:splat 301

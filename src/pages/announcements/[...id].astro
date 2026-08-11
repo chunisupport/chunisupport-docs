@@ -1,0 +1,55 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import {
+  ANNOUNCEMENT_CATEGORY_LABELS,
+  formatAnnouncementDate,
+} from '../../lib/announcements'
+
+export async function getStaticPaths() {
+  const announcements = await getCollection('announcements')
+  return announcements.map((announcement) => ({
+    params: { id: announcement.id },
+    props: { announcement },
+  }))
+}
+
+type Props = {
+  announcement: CollectionEntry<'announcements'>
+}
+
+const { announcement } = Astro.props
+const { Content } = await render(announcement)
+const publishedDate = announcement.data.publishedAt.toISOString().slice(0, 10)
+---
+
+<StarlightPage
+  hasSidebar={false}
+  frontmatter={{
+    title: announcement.data.title,
+    tableOfContents: false,
+    description: announcement.data.summary,
+  }}
+>
+  <p class="announcement-meta">
+    <span>{ANNOUNCEMENT_CATEGORY_LABELS[announcement.data.category]}</span>
+    <time datetime={publishedDate}>{formatAnnouncementDate(announcement.data.publishedAt)}</time>
+  </p>
+  <div class="sl-markdown-content">
+    <Content />
+  </div>
+</StarlightPage>
+
+<style>
+  .announcement-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+
+  .announcement-meta span {
+    font-weight: 600;
+  }
+</style>
