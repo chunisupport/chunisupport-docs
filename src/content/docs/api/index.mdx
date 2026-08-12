@@ -1425,7 +1425,7 @@ Authorization: Bearer <APIトークン>
 
 ```json
 {
-  "user_id": 1,
+  "user_id": 0,
   "player_name": "０ｘＦＦ３１",
   "title": "Gate of Fate",
   "title_rarity": "ultima",
@@ -1441,7 +1441,7 @@ Authorization: Bearer <APIトークン>
 
 | フィールド | 型 | 説明 |
 | ---------- | -- | ---- |
-| `user_id` | number | 内部ユーザーID |
+| `user_id` | number | 内部ユーザーIDを公開しないため常に `0` |
 | `player_name` | string | プレイヤー名 |
 | `title` | string \| null | スロット1の称号 |
 | `title_rarity` | string \| null | スロット1称号のレアリティ |
