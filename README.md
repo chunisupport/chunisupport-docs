@@ -24,6 +24,10 @@ npm run build
 npm run preview
 ```
 
+## コンテンツの更新
+
+- [お知らせの書き方](docs/announcements.md)
+
 ## Cloudflare Pages
 
 Cloudflare PagesでGitリポジトリを接続し、次の値を設定します。
