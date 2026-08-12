@@ -47,6 +47,7 @@ develop環境では、ビルド時の環境変数を`SITE_URL=https://develop.ch
 ## 環境変数
 
 - `SITE_URL`: サイトの公開URL。お知らせフィード内のリンク生成などに使用します。
+- `PUBLIC_APP_URL`: ChuniSupport本体の公開URL。「ChuniSupportを開く」リンクに使用します。
 - `PUBLIC_BOOKMARKLET_URL`: JavaScriptファイルを配信するベースURL
 - `PUBLIC_BOOKMARKLET_ENTRYPOINT`: 読み込むJavaScriptファイル名
 

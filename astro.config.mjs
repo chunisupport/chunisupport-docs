@@ -10,6 +10,12 @@ export default defineConfig({
     output: 'static',
     env: {
         schema: {
+            PUBLIC_APP_URL: envField.string({
+                context: 'server',
+                access: 'public',
+                url: true,
+                default: 'https://chunisupport.net',
+            }),
             PUBLIC_BOOKMARKLET_URL: envField.string({
                 context: 'server',
                 access: 'public',
