@@ -1,0 +1,14 @@
+---
+import { PUBLIC_STATIC_API_BASE_URL } from 'astro:env/server'
+
+interface Props {
+    path?: string
+}
+
+const { path = '' } = Astro.props
+const baseUrl = PUBLIC_STATIC_API_BASE_URL.replace(/\/+$/, '')
+const normalizedPath = path.replace(/^\/+/, '')
+const url = normalizedPath ? `${baseUrl}/${normalizedPath}` : baseUrl
+---
+
+<a href={url}><code>{url}</code></a>

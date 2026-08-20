@@ -32,6 +32,12 @@ export default defineConfig({
                 access: 'public',
                 default: 'https://api.chunisupport.net',
             }),
+            PUBLIC_STATIC_API_BASE_URL: envField.string({
+                context: 'server',
+                access: 'public',
+                url: true,
+                default: 'https://static.chunisupport.net',
+            }),
         },
     },
     integrations: [

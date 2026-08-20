@@ -50,5 +50,6 @@ develop環境では、ビルド時の環境変数を`SITE_URL=https://develop.ch
 - `PUBLIC_APP_URL`: ChuniSupport本体の公開URL。「ChuniSupportを開く」リンクに使用します。
 - `PUBLIC_BOOKMARKLET_URL`: JavaScriptファイルを配信するベースURL
 - `PUBLIC_BOOKMARKLET_ENTRYPOINT`: 読み込むJavaScriptファイル名
+- `PUBLIC_STATIC_API_BASE_URL`: キャッシュ済み静的APIデータのベースURL
 
 未設定時は `astro.config.mjs` の既定値を使用します。Cloudflare Pagesで変更する場合は、ビルド時の環境変数として設定してください。

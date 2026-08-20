@@ -4,6 +4,8 @@ description: ChuniSupport 外部向けAPIのドキュメントです。APIトー
 ---
 
 import ApiBaseUrl from '../../../components/ApiBaseUrl.astro'
+import StaticApiUrl from '../../../components/StaticApiUrl.astro'
+import { Aside } from '@astrojs/starlight/components'
 
 
 ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプログラムから取得するためのAPIです。ほとんどのエンドポイントでAPIトークンによる認証が必要です。スコア履歴取得のみAPIトークンは任意です。
@@ -115,6 +117,12 @@ Authorization: Bearer <APIトークン>
 
 WORLD'S ENDを除く全楽曲を取得します。削除済み楽曲は除外されます。
 
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="v1/songs.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
+
 **リクエスト**:
 
 ```
@@ -176,7 +184,7 @@ Authorization: Bearer <APIトークン>
 | フィールド | 型 | 説明 |
 | ---------- | -- | ---- |
 | `songs` | array | 楽曲情報の配列 |
-| `songs[].id` | string | 楽曲の表示用ID（16進数16文字） |
+| `songs[].id` | string | 楽曲のID（16進数16文字） |
 | `songs[].title` | string | 楽曲名 |
 | `songs[].reading` | string \| null | 楽曲名の読み |
 | `songs[].artist` | string | アーティスト名 |
@@ -238,7 +246,7 @@ Content-Type: application/json
 
 | フィールド | 型 | 必須 | 説明 |
 | ---------- | -- | ---- | ---- |
-| `[].id` | string | ✓ | 楽曲の表示用ID（16文字の小文字16進数） |
+| `[].id` | string | ✓ | 楽曲のID（16文字の小文字16進数） |
 | `[].title` | string | ✓ | 楽曲名 |
 | `[].reading` | string \| null | | 楽曲名の読み |
 | `[].artist` | string | ✓ | アーティスト名 |
@@ -293,7 +301,7 @@ Content-Type: application/json
 
 **レスポンス**: 200 OK
 
-更新後の楽曲オブジェクトを返します。フィールドの詳細は [GET `/v1/songs/:displayid`](#get-v1songsdisplayid) を参照してください。
+更新後の楽曲オブジェクトを返します。フィールドの詳細は [GET `/v1/songs/:id`](#get-v1songsid) を参照してください。
 
 **エラー**:
 
@@ -307,7 +315,7 @@ Content-Type: application/json
 
 ---
 
-### GET `/v1/songs/:displayid`
+### GET `/v1/songs/:id`
 
 指定された楽曲の詳細を取得します。
 
@@ -322,7 +330,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `displayid` | string | 楽曲の表示用ID（16文字） |
+| `id` | string | 楽曲のID（16文字） |
 
 **レスポンス**: 200 OK
 
@@ -381,7 +389,7 @@ Authorization: Bearer <APIトークン>
 
 ---
 
-### GET `/v1/songs/:displayid/stats/:difficulty`
+### GET `/v1/songs/:id/stats/:difficulty`
 
 指定楽曲の特定難易度におけるレーティング帯別の統計情報を取得します。
 
@@ -396,7 +404,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `displayid` | string | 楽曲の表示用ID（16文字） |
+| `id` | string | 楽曲のID（16文字） |
 | `difficulty` | string | 難易度名（小文字）: `basic`、`advanced`、`expert`、`master`、`ultima`、`worldsend` |
 
 **レスポンス**: 200 OK
@@ -491,7 +499,7 @@ Authorization: Bearer <APIトークン>
 
 ---
 
-### GET `/v1/songs/:displayid/score-history/:difficulty`
+### GET `/v1/songs/:id/score-history/:difficulty`
 
 指定楽曲の指定難易度におけるスコア履歴を取得します。各譜面の現行ベストと過去のベストを新しい順で返します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
 
@@ -508,7 +516,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `displayid` | string | 楽曲の表示用ID（16文字） |
+| `id` | string | 楽曲のID（16文字） |
 | `difficulty` | string | 難易度名（小文字）: `expert`、`master`、`ultima` |
 
 **クエリパラメータ**:
@@ -564,6 +572,12 @@ Authorization: Bearer <APIトークン>
 
 全WORLD'S END楽曲を取得します。削除済み楽曲は除外されます。WORLD'S ENDは1曲1譜面です。
 
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="v1/worldsend-songs.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
+
 **リクエスト**:
 
 ```
@@ -602,7 +616,7 @@ Authorization: Bearer <APIトークン>
 | フィールド | 型 | 説明 |
 | ---------- | -- | ---- |
 | `songs` | array | WORLD'S END楽曲の配列 |
-| `songs[].id` | string | 楽曲の表示用ID |
+| `songs[].id` | string | 楽曲のID |
 | `songs[].title` | string | 楽曲名 |
 | `songs[].reading` | string \| null | 楽曲名の読み |
 | `songs[].artist` | string | アーティスト名 |
@@ -619,7 +633,7 @@ Authorization: Bearer <APIトークン>
 
 ---
 
-### GET `/v1/worldsend-songs/:displayid`
+### GET `/v1/worldsend-songs/:id`
 
 指定されたWORLD'S END楽曲の詳細を取得します。
 
@@ -634,7 +648,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `displayid` | string | 楽曲の表示用ID |
+| `id` | string | 楽曲のID |
 
 **レスポンス**: 200 OK
 
@@ -670,7 +684,7 @@ Authorization: Bearer <APIトークン>
 
 ---
 
-### GET `/v1/worldsend-songs/:displayid/score-history`
+### GET `/v1/worldsend-songs/:id/score-history`
 
 指定WORLD'S END楽曲のスコア履歴を取得します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
 
@@ -687,7 +701,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `displayid` | string | WORLD'S END楽曲の表示用ID |
+| `id` | string | WORLD'S END楽曲のID |
 
 **クエリパラメータ**:
 
@@ -697,7 +711,7 @@ Authorization: Bearer <APIトークン>
 
 **レスポンス**: 200 OK
 
-レスポンス形式は [GET `/v1/songs/:displayid/score-history/:difficulty`](#get-v1songsdisplayidscore-historydifficulty) と同一です。
+レスポンス形式は [GET `/v1/songs/:id/score-history/:difficulty`](#get-v1songsidscore-historydifficulty) と同一です。
 
 **エラー**:
 
@@ -893,7 +907,7 @@ Authorization: Bearer <APIトークン>
     ],
     "course": [
       {
-        "display_id": "7d5f5c42b9a8e301",
+        "id": "7d5f5c42b9a8e301",
         "idx": "50020",
         "name": "クラス認定 Ⅲ",
         "class": "3",
@@ -959,7 +973,7 @@ Authorization: Bearer <APIトークン>
 | `is_op_target` | boolean | OVER POWER計算の対象譜面かどうか |
 | `updated_at` | string \| null | 更新日時。未プレイ補完データは `null` |
 | `difficulty` | string | 難易度名 |
-| `id` | string | 楽曲の表示用ID |
+| `id` | string | 楽曲のID |
 | `title` | string | 楽曲名 |
 | `artist` | string | アーティスト名 |
 | `const` | number | 譜面定数 |
@@ -981,7 +995,7 @@ Authorization: Bearer <APIトークン>
 | ---------- | -- | ---- |
 | `is_played` | boolean | プレイ済みかどうか |
 | `updated_at` | string \| null | 更新日時 |
-| `id` | string | 楽曲の表示用ID |
+| `id` | string | 楽曲のID |
 | `title` | string | 楽曲名 |
 | `artist` | string | アーティスト名 |
 | `level_star` | number \| null | WORLD'S ENDレベル |
@@ -998,7 +1012,7 @@ Authorization: Bearer <APIトークン>
 
 | フィールド | 型 | 説明 |
 | ---------- | -- | ---- |
-| `display_id` | string | コースの表示用ID（16文字の小文字16進数） |
+| `id` | string | コースのID（16文字の小文字16進数） |
 | `idx` | string | 公式ID |
 | `name` | string | コース名 |
 | `class` | string | コースクラス（`1`～`5`、`inf`、`extra`） |
@@ -1044,7 +1058,7 @@ Authorization: Bearer <APIトークン>
 {
   "courses": [
     {
-      "display_id": "7d5f5c42b9a8e301",
+      "id": "7d5f5c42b9a8e301",
       "idx": "50020",
       "name": "クラス認定 Ⅲ",
       "class": "3"
@@ -1056,14 +1070,14 @@ Authorization: Bearer <APIトークン>
 | フィールド | 型 | 説明 |
 | ---------- | -- | ---- |
 | `courses` | array | コース情報の配列 |
-| `courses[].display_id` | string | コースの表示用ID（16文字の小文字16進数） |
+| `courses[].id` | string | コースのID（16文字の小文字16進数） |
 | `courses[].idx` | string | 公式ID |
 | `courses[].name` | string | コース名 |
 | `courses[].class` | string | コースクラス（`1`～`5`、`inf`、`extra`） |
 
 ---
 
-### GET `/v1/courses/:displayid`
+### GET `/v1/courses/:id`
 
 指定されたコースの詳細を取得します。
 
@@ -1078,13 +1092,13 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `displayid` | string | コースの表示用ID（16文字の小文字16進数） |
+| `id` | string | コースのID（16文字の小文字16進数） |
 
 **レスポンス**: 200 OK
 
 ```json
 {
-  "display_id": "7d5f5c42b9a8e301",
+  "id": "7d5f5c42b9a8e301",
   "idx": "50020",
   "name": "クラス認定 Ⅲ",
   "class": "3"
@@ -1097,7 +1111,7 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
-| `validation_failed` | 422 | `displayid` の形式が不正です |
+| `validation_failed` | 422 | `id` の形式が不正です |
 | `not_found` | 404 | 指定されたコースが見つかりません |
 
 ---
@@ -1134,7 +1148,7 @@ Authorization: Bearer <APIトークン>
   "updated_at": "2026-07-14T15:30:00+09:00",
   "courses": [
     {
-      "display_id": "7d5f5c42b9a8e301",
+      "id": "7d5f5c42b9a8e301",
       "idx": "50020",
       "name": "クラス認定 Ⅲ",
       "class": "3",
@@ -1145,7 +1159,7 @@ Authorization: Bearer <APIトークン>
       "updated_at": "2026-07-13T20:12:34+09:00"
     },
     {
-      "display_id": "2a1076c9e51f84bd",
+      "id": "2a1076c9e51f84bd",
       "idx": "50021",
       "name": "クラス認定 Ⅳ",
       "class": "4",
@@ -1163,7 +1177,7 @@ Authorization: Bearer <APIトークン>
 | ---------- | -- | ---- |
 | `updated_at` | string \| null | コースマスタまたは対象ユーザーのコースレコードの最終更新日時のうち新しい方。どちらも存在しない場合は `null` |
 | `courses` | array | コースレコードの配列。プレイヤー未連携の場合は空配列 |
-| `courses[].display_id` | string | コースの表示用ID（16文字の小文字16進数） |
+| `courses[].id` | string | コースのID（16文字の小文字16進数） |
 | `courses[].idx` | string | 公式ID |
 | `courses[].name` | string | コース名 |
 | `courses[].class` | string | コースクラス（`1`～`5`、`inf`、`extra`） |
@@ -1192,6 +1206,12 @@ chunirecとの互換性を持つエンドポイントです。`/v1` と同様に
 ### GET `/compat/chunirec/2.0/music/showall`
 
 WORLD'S ENDを除く全楽曲をchunirec互換形式で取得します。
+
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="compat/chunirec/2.0/music/showall.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
 
 **リクエスト**:
 
@@ -1245,7 +1265,7 @@ Authorization: Bearer <APIトークン>
 
 | フィールド | 型 | 説明 |
 | ---------- | -- | ---- |
-| `[].meta.id` | string | 楽曲の表示用ID |
+| `[].meta.id` | string | 楽曲のID |
 | `[].meta.title` | string | 楽曲名 |
 | `[].meta.genre` | string \| null | ジャンル名 |
 | `[].meta.artist` | string | アーティスト名 |
@@ -1280,7 +1300,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 必須 | 説明 |
 | ---------- | -- | ---- | ---- |
-| `id` | string | 必須 | 楽曲の表示用ID（16文字） |
+| `id` | string | 必須 | 楽曲のID（16文字） |
 
 **レスポンス**: 200 OK
 
@@ -1468,6 +1488,12 @@ reiwa互換APIは外部ツールとの互換性を持つエンドポイントで
 ### GET `/compat/reiwa/1/chunithm_record/original`
 
 WORLD'S ENDを除く全楽曲の通常譜面情報を、譜面単位のフラットな配列で取得します。削除済み楽曲は含まれません。
+
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="compat/reiwa/1/chunithm_record/original.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
 
 **リクエスト**:
 
