@@ -723,6 +723,63 @@ Authorization: Bearer <APIトークン>
 
 ---
 
+### GET `/v1/users/:username/rating`
+
+指定されたユーザーの計算RATINGとレーティング枠だけを取得する軽量APIです。通常譜面全件の `standard`、WORLD'S ENDの `worldsend`、コースの `course` は返しません。
+
+**プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto/rating
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "rating": 17.4632,
+  "best_average": 17.5123,
+  "new_average": 17.3159,
+  "best": [],
+  "best_candidate": [],
+  "new": [],
+  "new_candidate": [],
+  "meta": {
+    "updated_at": "2026-06-21T23:58:02+09:00"
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `rating` | number \| null | BEST枠とNEW枠から計算したプレイヤーRATING |
+| `best_average` | number \| null | BEST枠の平均RATING |
+| `new_average` | number \| null | NEW枠の平均RATING |
+| `best` | array | ベスト枠レコード |
+| `best_candidate` | array | ベスト候補枠レコード |
+| `new` | array | 新曲枠レコード |
+| `new_candidate` | array | 新曲候補枠レコード |
+| `meta.updated_at` | string \| null | レーティング枠レコードの最終更新日時。対象レコードがなければプレイヤー更新日時、プレイヤー未連携なら `null` |
+
+各レコード要素は [GET `/v1/users/:username`](#get-v1usersusername) の `best` / `best_candidate` / `new` / `new_candidate` と同じ形式です。プレイヤー未連携時はRATINGと平均値が `null`、各配列が空になります。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
 ### GET `/v1/users/:username`
 
 指定されたユーザーのプロフィールとスコアレコードを取得します。
