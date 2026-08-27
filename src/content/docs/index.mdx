@@ -3,7 +3,7 @@ title: ChuniSupport Docs
 description: ChuniSupportのヘルプとドキュメント
 template: splash
 hero:
-  tagline: ChuniSupportの使い方、更新情報、API情報をまとめています。
+  tagline: ChuniSupportの使い方、更新情報、外部アプリから利用できるAPI情報をまとめています。
   actions:
     - text: ヘルプを見る
       link: /help/
@@ -12,6 +12,9 @@ hero:
     - text: ChuniSupportを開く
       link: env:PUBLIC_APP_URL
       icon: external
+    - text: APIを使う
+      link: /api/
+      icon: open-book
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components'
@@ -19,7 +22,7 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components'
 <CardGrid>
   <LinkCard href="/help/" title="ヘルプ" description="ChuniSupportの使い方を確認します。" />
   <LinkCard href="/announcements/" title="お知らせ" description="更新やメンテナンスなどのお知らせを確認します。" />
-  <LinkCard href="/api/" title="APIドキュメント" description="ChuniSupport APIの仕様を確認します。" />
+  <LinkCard href="/api/" title="ChuniSupport API" description="楽曲・譜面・プレイヤーデータを外部アプリから利用できます。認証不要の静的JSONも提供しています。" />
   <LinkCard href="/legal/terms/" title="利用規約" description="ChuniSupportの利用規約を確認します。" />
   <LinkCard href="/legal/privacy/" title="プライバシーポリシー" description="個人情報等の取り扱いを確認します。" />
 </CardGrid>

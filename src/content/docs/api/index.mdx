@@ -1,18 +1,63 @@
 ---
-title: APIドキュメント
-description: ChuniSupport 外部向けAPIのドキュメントです。APIトークンを使用して楽曲情報やユーザーデータを取得できます。
+title: ChuniSupport API
+description: 楽曲・譜面・プレイヤーデータを外部アプリから利用するためのガイドとAPIリファレンスです。
 ---
 
 import ApiBaseUrl from '../../../components/ApiBaseUrl.astro'
 import StaticApiUrl from '../../../components/StaticApiUrl.astro'
-import { Aside } from '@astrojs/starlight/components'
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components'
 
+ChuniSupportの楽曲・譜面データやプレイヤーデータを、Webアプリ、Discord Bot、分析ツールなどからJSONで利用できます。
 
-ChuniSupport APIは、CHUNITHMの楽曲情報やユーザーデータをプログラムから取得するためのAPIです。ほとんどのエンドポイントでAPIトークンによる認証が必要です。スコア履歴取得のみAPIトークンは任意です。
+<CardGrid>
+  <LinkCard href="#get-v1songs" title="楽曲・譜面データ" description="通常楽曲の基本情報、譜面定数、ノーツ数、統計を取得します。" />
+  <LinkCard href="#get-v1worldsend-songs" title="WORLD'S END" description="WORLD'S END楽曲と譜面情報を取得します。" />
+  <LinkCard href="#get-v1usersusernamerating" title="プレイヤーデータ・RATING" description="公開範囲に応じて、プレイヤー情報やRATINGを取得します。" />
+  <LinkCard href="#get-v1songsidscore-historydifficulty" title="スコア履歴" description="楽曲ごとのスコア推移を取得し、グラフや振り返りに活用できます。" />
+  <LinkCard href="#chunirec互換api-compatchunirec20" title="chunirec互換API" description="chunirec向けの既存ツールで扱いやすい形式を提供します。" />
+  <LinkCard href="#reiwa互換api-compatreiwa1" title="reiwa互換API" description="reiwa互換形式の楽曲・譜面データを取得します。" />
+</CardGrid>
+
+## まず試す
+
+静的楽曲データは、アカウント登録やAPIトークンなしですぐに取得できます。
+
+```bash
+curl https://static.chunisupport.net/v1/songs.json
+```
+
+静的データは認証不要で、通常のAPIのレートリミット対象外です。キャッシュ済みのため最新のAPIレスポンスより最大で約1時間古い場合があります。常に最新の情報が必要な場合は、認証付きの [`GET /v1/songs`](#get-v1songs) を使用してください。
+
+利用できる静的データ:
+
+- [通常楽曲・譜面データ](https://static.chunisupport.net/v1/songs.json)
+- [WORLD'S END楽曲・譜面データ](https://static.chunisupport.net/v1/worldsend-songs.json)
+- [chunirec互換の楽曲データ](https://static.chunisupport.net/compat/chunirec/2.0/music/showall.json)
+- [reiwa互換の楽曲・譜面データ](https://static.chunisupport.net/compat/reiwa/1/chunithm_record/original.json)
+
+## APIリファレンス
+
+目的に応じて、次の項目から参照してください。
+
+| 目的 | エンドポイント |
+| --- | --- |
+| 通常楽曲の一覧・詳細・統計 | [`GET /v1/songs`](#get-v1songs) |
+| WORLD'S END楽曲の一覧・詳細 | [`GET /v1/worldsend-songs`](#get-v1worldsend-songs) |
+| プレイヤーのRATING | [`GET /v1/users/:username/rating`](#get-v1usersusernamerating) |
+| プレイヤー情報・プレイ記録 | [`GET /v1/users/:username`](#get-v1usersusername) |
+| 通常譜面・WORLD'S ENDのスコア履歴 | [`GET /v1/songs/:id/score-history/:difficulty`](#get-v1songsidscore-historydifficulty) / [`GET /v1/worldsend-songs/:id/score-history`](#get-v1worldsend-songsidscore-history) |
+| コースとコース記録 | [`GET /v1/courses`](#get-v1courses) / [`GET /v1/users/:username/records/courses`](#get-v1usersusernamerecordscourses) |
+| 既存ツールとの互換性 | [chunirec互換API](#chunirec互換api-compatchunirec20) / [reiwa互換API](#reiwa互換api-compatreiwa1) |
+
+### 基本仕様
 
 - **ベースURL**: <ApiBaseUrl />
 - **コンテンツタイプ**: すべてのレスポンスは `application/json` です。
 - **文字コード**: UTF-8
+
+<Aside type="caution" title="利用条件">
+APIは無料・非営利の用途に限って利用できます。有料機能、広告付きサービス、取得データの販売などには利用できません。利用を始める前に、[利用規約の「5. APIの利用」](/legal/terms/#5-apiの利用)を確認してください。
+</Aside>
 
 ## 認証
 
