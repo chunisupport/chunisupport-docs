@@ -648,7 +648,7 @@ Authorization: Bearer <APIトークン>
 
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
-| `id` | string | 楽曲のID |
+| `id` | string | WORLD'S END楽曲のID |
 
 **レスポンス**: 200 OK
 
@@ -1077,7 +1077,7 @@ Authorization: Bearer <APIトークン>
 | `score` | number | コーススコア（未プレイ補完データは `0`） |
 | `is_clear` | boolean | クリア済みかどうか |
 | `combo_lamp` | string \| null | コンボランプ。未設定または `NONE` の場合は `null` |
-| `updated_at` | string \| null | 更新日時。未プレイ補完データは `null` |
+| `updated_at` | string \| null | 更新日時。未プレイの場合は `null` |
 
 #### プレイヤー未連携時のレスポンス
 
@@ -1540,7 +1540,7 @@ Authorization: Bearer <APIトークン>
 
 ## reiwa互換API `/compat/reiwa/1`
 
-reiwa互換APIは外部ツールとの互換性を持つエンドポイントです。APIトークン認証を使用します。
+reiwa互換APIは、[reiwa.f5.si（音ゲーツール置き場）](https://reiwa.f5.si/) が提供するAPIとの互換性を持つエンドポイントです。APIトークン認証を使用します。
 
 ### GET `/compat/reiwa/1/chunithm_record/original`
 
