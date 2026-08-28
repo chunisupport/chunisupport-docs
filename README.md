@@ -1,6 +1,6 @@
-# ChuniSupport Docs
+# ChuniSupport ガイド
 
-ChuniSupportのドキュメントサイトです。AstroとStarlightで構築しています。
+ChuniSupportのガイドサイトです。AstroとStarlightで構築しています。
 
 ## ローカル開発
 
