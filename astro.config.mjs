@@ -42,7 +42,7 @@ export default defineConfig({
     },
     integrations: [
         starlight({
-            title: 'ChuniSupport Docs',
+            title: 'ChuniSupport ガイド',
             description: 'ChuniSupportのヘルプとドキュメント',
             favicon: '/favicon.png',
             disable404Route: true,
