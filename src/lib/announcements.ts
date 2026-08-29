@@ -9,9 +9,12 @@ export const ANNOUNCEMENT_CATEGORY_LABELS = {
 
 export const getAnnouncements = async (): Promise<CollectionEntry<'announcements'>[]> => {
   const announcements = await getCollection('announcements')
-  return announcements.toSorted(
-    (left, right) => right.data.publishedAt.getTime() - left.data.publishedAt.getTime()
-  )
+  return announcements.toSorted((left, right) => {
+    const publishedAtComparison =
+      right.data.publishedAt.getTime() - left.data.publishedAt.getTime()
+
+    return publishedAtComparison || right.id.localeCompare(left.id, 'en')
+  })
 }
 
 export const formatAnnouncementDate = (date: Date): string => {

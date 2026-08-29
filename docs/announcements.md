@@ -4,12 +4,12 @@
 
 ## 追加手順
 
-1. `src/content/announcements/` に `YYYY-MM-DD.md` 形式のファイルを作成します。
+1. `src/content/announcements/` に `YYYY-MM-DD.md` 形式のファイルを作成します。同じ日に複数件追加する場合は、2件目以降を `YYYY-MM-DD-slug.md` 形式にします。
 2. ファイルの先頭に、次の frontmatter を記述します。
 3. frontmatter の後に、お知らせの本文を Markdown で記述します。
 4. `npm run build` を実行し、入力内容と生成結果を確認します。
 
-ファイル名は公開 URL の一部になります。たとえば、`2026-08-11.md` の公開 URL は `/announcements/2026-08-11/` です。同じ日付に追加できるお知らせは1件です。
+ファイル名は公開 URL の一部になります。たとえば、`2026-08-11.md` の公開 URL は `/announcements/2026-08-11/`、`2026-08-11-maintenance.md` は `/announcements/2026-08-11-maintenance/` です。`slug` には内容を表す短い英小文字・数字・ハイフンを使用します。
 
 ## 記述例
 
