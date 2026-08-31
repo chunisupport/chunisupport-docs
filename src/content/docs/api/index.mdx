@@ -15,7 +15,7 @@ ChuniSupportの楽曲・譜面データやプレイヤーデータを、Webア�
   <LinkCard href="#get-v1usersusernamerating" title="プレイヤーデータ・RATING" description="公開範囲に応じて、プレイヤー情報やRATINGを取得します。" />
   <LinkCard href="#get-v1songsidscore-historydifficulty" title="スコア履歴" description="楽曲ごとのスコア推移を取得し、グラフや振り返りに活用できます。" />
   <LinkCard href="#chunirec互換api-compatchunirec20" title="chunirec互換API" description="chunirec向けの既存ツールで扱いやすい形式を提供します。" />
-  <LinkCard href="#reiwa互換api-compatreiwa1" title="reiwa互換API" description="reiwa互換形式の楽曲・譜面データを取得します。" />
+  <LinkCard href="#reiwa互換api-compatreiwa1" title="reiwa互換API" description="reiwa互換形式のバージョン、楽曲・譜面データを取得します。" />
 </CardGrid>
 
 ## まず試す
@@ -1585,7 +1585,40 @@ Authorization: Bearer <APIトークン>
 
 ## reiwa互換API `/compat/reiwa/1`
 
-reiwa互換APIは外部ツールとの互換性を持つエンドポイントです。APIトークン認証を使用します。
+reiwa互換APIは外部ツールとの互換性を持つエンドポイントです。CHUNITHMのバージョン、楽曲・譜面データを取得できます。APIトークン認証を使用します。
+
+### GET `/compat/reiwa/1/chunithm_versions.json`
+
+リリース済みのCHUNITHMバージョン一覧を取得します。
+
+**リクエスト**:
+
+```
+GET /compat/reiwa/1/chunithm_versions.json
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+[
+  {
+    "version": "CHUNITHM",
+    "release": "2015-07-16"
+  },
+  {
+    "version": "CHUNITHM PLUS",
+    "release": "2016-02-04"
+  }
+]
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `version` | string | CHUNITHMのバージョン名 |
+| `release` | string | リリース日（`YYYY-MM-DD`） |
+
+リリース日の昇順で返します。
 
 ### GET `/compat/reiwa/1/chunithm_record/original`
 
