@@ -18,23 +18,6 @@ ChuniSupportの楽曲・譜面データやプレイヤーデータを、Webア�
   <LinkCard href="#reiwa互換api-compatreiwa1" title="reiwa互換API" description="reiwa互換形式のバージョン、楽曲・譜面データを取得します。" />
 </CardGrid>
 
-## まず試す
-
-静的楽曲データは、アカウント登録やAPIトークンなしですぐに取得できます。
-
-```bash
-curl https://static.chunisupport.net/v1/songs.json
-```
-
-静的データは認証不要で、通常のAPIのレートリミット対象外です。キャッシュ済みのため最新のAPIレスポンスより最大で約1時間古い場合があります。常に最新の情報が必要な場合は、認証付きの [`GET /v1/songs`](#get-v1songs) を使用してください。
-
-利用できる静的データ:
-
-- [通常楽曲・譜面データ](https://static.chunisupport.net/v1/songs.json)
-- [WORLD'S END楽曲・譜面データ](https://static.chunisupport.net/v1/worldsend-songs.json)
-- [chunirec互換の楽曲データ](https://static.chunisupport.net/compat/chunirec/2.0/music/showall.json)
-- [reiwa互換の楽曲・譜面データ](https://static.chunisupport.net/compat/reiwa/1/chunithm_record/original.json)
-
 ## APIリファレンス
 
 目的に応じて、次の項目から参照してください。
