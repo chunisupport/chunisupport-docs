@@ -844,9 +844,12 @@ Authorization: Bearer <APIトークン>
     "rating": 17.4632,
     "class_emblem_id": 6,
     "class_emblem_base_id": null,
+    "possession_id": 5,
     "last_played_at": "2026-06-20T22:28:00+09:00",
     "overpower_value": 103759.74,
     "overpower_percent": 76.4308,
+    "official_overpower": 103750.12,
+    "official_overpower_percent": 76.42,
     "honors": [
       { "slot": 1, "name": "Gate of Fate", "type_name": "ultima", "image_url": "honor_bg_ultima.png" },
       { "slot": 2, "name": "Arcaea", "type_name": "silver", "image_url": "honor_bg_silver.png" },
@@ -1026,9 +1029,12 @@ Authorization: Bearer <APIトークン>
 | `rating` | number | 保存済みスコアから算出したレーティング |
 | `class_emblem_id` | number \| null | クラスエンブレムID |
 | `class_emblem_base_id` | number \| null | クラスエンブレムベースID |
+| `possession_id` | number | ポゼッションID（1: normal、2: silver、3: gold、4: platina、5: rainbow） |
 | `last_played_at` | string \| null | 最終プレイ日時（ISO8601） |
-| `overpower_value` | number \| null | OVER POWER値 |
-| `overpower_percent` | number \| null | OVER POWER達成割合（%） |
+| `overpower_value` | number \| null | 保存済みスコアから計算したOVER POWER値 |
+| `overpower_percent` | number \| null | 現在の楽曲マスタと未解禁設定から計算したOVER POWER達成割合（%） |
+| `official_overpower` | number | CHUNITHM-NETから取得した公式OVER POWER値 |
+| `official_overpower_percent` | number \| null | CHUNITHM-NETから取得した公式OP%。記録開始前は `null` |
 | `honors` | array | 称号情報（スロット1～3） |
 | `honors[].slot` | number | スロット番号 |
 | `honors[].name` | string | 称号名 |
