@@ -27,6 +27,7 @@ ChuniSupportの楽曲・譜面データやプレイヤーデータを、Webア�
 | 通常楽曲の一覧・詳細・統計 | [`GET /v1/songs`](#get-v1songs) |
 | WORLD'S END楽曲の一覧・詳細 | [`GET /v1/worldsend-songs`](#get-v1worldsend-songs) |
 | プレイヤーのRATING | [`GET /v1/users/:username/rating`](#get-v1usersusernamerating) |
+| 公式RATING・OVER POWER・OP%の履歴 | [`GET /v1/users/:username/rating-op-history`](#get-v1usersusernamerating-op-history) |
 | プレイヤー情報・プレイ記録 | [`GET /v1/users/:username`](#get-v1usersusername) |
 | 通常譜面・WORLD'S ENDのスコア履歴 | [`GET /v1/songs/:id/score-history/:difficulty`](#get-v1songsidscore-historydifficulty) / [`GET /v1/worldsend-songs/:id/score-history`](#get-v1worldsend-songsidscore-history) |
 | コースとコース記録 | [`GET /v1/courses`](#get-v1courses) / [`GET /v1/users/:username/records/courses`](#get-v1usersusernamerecordscourses) |
@@ -44,17 +45,17 @@ APIは無料・非営利の用途に限って利用できます。有料機能�
 
 ## 認証
 
-ほとんどのエンドポイントでAPIトークンが必要です。リクエストヘッダーに以下の形式でトークンを指定してください。
+APIエンドポイントではAPIトークンが必要です。リクエストヘッダーに以下の形式でトークンを指定してください。
 
 ```
 Authorization: Bearer <APIトークン>
 ```
 
-APIトークンはChuniSupportの設定画面から発行できます。
+APIトークンはChuniSupportの設定画面から発行できます。トークンの権限は、参照系APIのみを利用できる `read` と、参照系・更新系APIを利用できる `read_write` です。`read_write` トークンを発行できるのは、EDITOR または ADMIN のユーザーです。
 
-スコア履歴取得（`GET /v1/*/score-history*`）のみAPIトークンは任意です。公開ユーザーは未認証で参照できます。非公開ユーザーのスコア履歴を参照する場合は、本人または承認済みフレンドのAPIトークンを送信してください。
+公開ユーザーのデータを取得する場合も、有効なAPIトークンが必要です。非公開ユーザーのデータは、本人または承認済みフレンドのAPIトークンで参照できます。
 
-楽曲情報の更新（`PUT /v1/songs`、`PATCH /v1/songs/chart-constant`）には、APIトークン所有者が **EDITOR** または **ADMIN** 権限を持っている必要があります。
+楽曲情報の更新（`PUT /v1/songs`、`PATCH /v1/songs/chart-constant`）には、`read_write` トークンと、トークン所有者の **EDITOR** または **ADMIN** 権限の両方が必要です。`read_write` トークンだけではユーザーの権限は拡張されません。
 
 ## レートリミット
 
@@ -104,6 +105,7 @@ APIトークンはChuniSupportの設定画面から発行できます。
 | `score_history_unsupported_difficulty` | 400 | スコア履歴非対応の難易度が指定されました |
 | `validation_failed` | 400 / 422 | リクエストパラメータが不正です。未指定などは400、形式・値の検証エラーは422になります |
 | `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
+| `player_metric_history_not_found` | 404 | プレイヤーの公式指標履歴が存在しません |
 | `internal_error` | 500 | サーバー内部エラー |
 
 ---
@@ -239,7 +241,7 @@ Authorization: Bearer <APIトークン>
 
 通常楽曲（WORLD'S ENDを除く）の楽曲情報と譜面情報を一括更新します。既存データの修正専用で、新規追加・削除は行いません。
 
-**権限**: EDITOR または ADMIN
+**権限**: `read_write` トークン、および EDITOR または ADMIN
 
 **リクエスト**:
 
@@ -295,7 +297,7 @@ Content-Type: application/json
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
 | `validation_failed` | 422 | リクエストパラメータが不正です |
-| `forbidden` | 403 | 権限が不足しています（EDITOR以上が必要） |
+| `forbidden` | 403 | `read_write` トークン、または EDITOR / ADMIN 権限が必要です |
 
 ---
 
@@ -303,7 +305,7 @@ Content-Type: application/json
 
 通常楽曲の既存譜面について、公式ID・難易度名の先頭3文字・譜面定数だけを指定して更新します。更新後は `is_const_unknown` が `false` になります。
 
-**権限**: EDITOR または ADMIN
+**権限**: `read_write` トークン、および EDITOR または ADMIN
 
 **リクエスト**:
 
@@ -337,7 +339,7 @@ Content-Type: application/json
 | ------ | ---- | ---- |
 | `validation_failed` | 400 | リクエストパラメータが不正です |
 | `invalid_difficulty` | 400 | 難易度または譜面定数が不正です |
-| `forbidden` | 403 | 権限が不足しています（EDITOR以上が必要） |
+| `forbidden` | 403 | `read_write` トークン、または EDITOR / ADMIN 権限が必要です |
 | `song_not_found` | 404 | 公式IDに対応する通常楽曲が見つかりません |
 | `chart_not_found` | 404 | 対象難易度の譜面が存在しません |
 
@@ -531,7 +533,7 @@ Authorization: Bearer <APIトークン>
 
 指定楽曲の指定難易度におけるスコア履歴を取得します。各譜面の現行ベストと過去のベストを新しい順で返します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
 
-**認証**: APIトークン（任意）。公開ユーザーは未認証で参照できます。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
+**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
 
 **リクエスト**:
 
@@ -716,7 +718,7 @@ Authorization: Bearer <APIトークン>
 
 指定WORLD'S END楽曲のスコア履歴を取得します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
 
-**認証**: APIトークン（任意）。公開ユーザーは未認証で参照できます。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
+**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
 
 **リクエスト**:
 
@@ -747,6 +749,57 @@ Authorization: Bearer <APIトークン>
 | ------ | ---- | ---- |
 | `validation_failed` | 400 | `username` が未指定です |
 | `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
+### GET `/v1/users/:username/rating-op-history`
+
+CHUNITHM-NETから取得した公式RATING・公式OVER POWER・公式OP%の履歴を、現在値を先頭に新しい順で取得します。保存される履歴は最大500件で、現在値を含むレスポンスは最大501件です。
+
+**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto/rating-op-history
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "entries": [
+    {
+      "rating": 17.46,
+      "overpower": 103750.12,
+      "overpower_percent": 76.42,
+      "data_collected_at": "2026-09-24T12:34:56+09:00"
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `entries` | array | 現在値と保存済み履歴の配列（新しい順） |
+| `entries[].rating` | number | CHUNITHM-NETから取得した公式RATING |
+| `entries[].overpower` | number | CHUNITHM-NETから取得した公式OVER POWER値 |
+| `entries[].overpower_percent` | number \| null | CHUNITHM-NETから取得した公式OP%。記録開始前は `null` |
+| `entries[].data_collected_at` | string | データ取得日時（ISO8601） |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `player_metric_history_not_found` | 404 | プレイヤー未連携などにより履歴が存在しません |
 | `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
 
 ---
