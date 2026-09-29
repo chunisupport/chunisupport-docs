@@ -199,6 +199,13 @@
   --sl-content-width: 50rem;
 }
 
+/* 見出しは Starlight 既定だと h1 と h2 の差が小さいため 1 段階ずつ下げる */
+:root,
+:root[data-cs-theme] {
+  --sl-text-h2: var(--sl-text-2xl);
+  --sl-text-h3: var(--sl-text-xl);
+}
+
 /* =========================================================================
  * テーマ（data-cs-theme）ごとの Starlight カラー割当
  *
@@ -214,7 +221,8 @@
 :root[data-cs-theme] {
   --sl-color-accent-low: var(--cs-color-accent-900);
   --sl-color-accent: var(--cs-color-accent-400);
-  --sl-color-accent-high: var(--cs-color-accent-100);
+  /* 100 だと暗い背景上でほぼ白に見え、ボタン等が浮きすぎるため 300 に抑える */
+  --sl-color-accent-high: var(--cs-color-accent-300);
 }
 
 :root[data-cs-theme='light'],
@@ -236,6 +244,7 @@
   --sl-color-gray-7: var(--color-gray-50);
   --sl-color-black: var(--color-white); /* cs-bg */
 
+  --sl-color-bg-nav: var(--color-white);
   --sl-color-bg-sidebar: var(--color-gray-50);
 }
 
@@ -317,15 +326,26 @@
   max-width: 42rem;
 }
 
-h2 {
-  font-size: 1.375rem;
-}
-
-h3 {
-  font-size: 1.125rem;
+/*
+ * サイドバーの選択中項目：Starlight 既定はアクセント色のベタ塗りで主張が強いため、
+ * 淡い背景＋左ラインで示す。
+ */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  color: var(--sl-color-white);
+  background-color: var(--sl-color-accent-low);
+  box-shadow: inset 3px 0 0 var(--sl-color-text-accent);
 }
 
 table td:nth-child(2),
 table th:nth-child(2) {
   white-space: nowrap;
+}
+
+/* トップページの導線カード（3 枚）を 1 行に並べる */
+@media (min-width: 50rem) {
+  [data-has-hero] .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

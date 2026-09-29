@@ -1,0 +1,54 @@
+---
+/*
+ * Starlight の Footer をオーバーライドし、既定のフッター（前後ページ等）の下に
+ * 利用規約・プライバシーポリシーなどのサイト共通リンクを表示する。
+ */
+import DefaultFooter from '@astrojs/starlight/components/Footer.astro'
+
+const links = [
+  { href: '/announcements/', label: 'お知らせ' },
+  { href: '/legal/terms/', label: '利用規約' },
+  { href: '/legal/privacy/', label: 'プライバシーポリシー' },
+]
+---
+
+<DefaultFooter />
+
+<nav class="site-footer" aria-label="サイト情報">
+  <ul>
+    {
+      links.map(({ href, label }) => (
+        <li>
+          <a href={href}>{label}</a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .site-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+    font-size: var(--sl-text-sm);
+  }
+
+  .site-footer ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer a {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+  }
+
+  .site-footer a:hover {
+    color: var(--sl-color-white);
+  }
+</style>

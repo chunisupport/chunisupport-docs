@@ -15,17 +15,17 @@ hero:
     - text: ChuniSupportを開く
       link: env:PUBLIC_APP_URL
       icon: external
+      variant: secondary
     - text: APIを使う
       link: /api/
       icon: open-book
+      variant: minimal
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components'
 
 <CardGrid>
-  <LinkCard href="/help/" title="ヘルプ" description="ChuniSupportの使い方を確認します。" />
+  <LinkCard href="/help/" title="ヘルプ" description="データの登録方法など、ChuniSupportの使い方を確認します。" />
   <LinkCard href="/announcements/" title="お知らせ" description="更新やメンテナンスなどのお知らせを確認します。" />
   <LinkCard href="/api/" title="ChuniSupport API" description="楽曲・譜面・プレイヤーデータを外部アプリから利用できます。認証不要の静的JSONも提供しています。" />
-  <LinkCard href="/legal/terms/" title="利用規約" description="ChuniSupportの利用規約を確認します。" />
-  <LinkCard href="/legal/privacy/" title="プライバシーポリシー" description="個人情報等の取り扱いを確認します。" />
 </CardGrid>

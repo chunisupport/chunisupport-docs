@@ -1,0 +1,292 @@
+---
+title: chunirec互換API
+description: chunirec互換形式のエンドポイント（/compat/chunirec/2.0）。
+sidebar:
+  label: chunirec互換API
+  order: 5
+---
+
+import StaticApiUrl from '../../../components/StaticApiUrl.astro'
+import { Aside } from '@astrojs/starlight/components'
+
+chunirecとの互換性を持つエンドポイントです。`/v1` と同様にAPIトークン認証を使用します。
+
+:::caution
+楽曲IDにはChuniSupportのIDを使用してください。chunirecで使用されている楽曲IDとは異なるため、chunirecの楽曲IDを指定しても正しく動作しません。楽曲IDは、このページに記載されている他のchunirec互換APIから取得できます。
+:::
+
+## GET `/compat/chunirec/2.0/music/showall`
+
+WORLD'S ENDを除く全楽曲をchunirec互換形式で取得します。
+
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="compat/chunirec/2.0/music/showall.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/music/showall
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+[
+  {
+    "meta": {
+      "id": "e9e66c56cb8388e9",
+      "title": "GEMINI -C-",
+      "genre": "ORIGINAL",
+      "artist": "Tatsh",
+      "release": "2016-03-17",
+      "bpm": 180
+    },
+    "data": {
+      "BAS": {
+        "level": 4,
+        "const": 4,
+        "maxcombo": 549,
+        "is_const_unknown": false
+      },
+      "ADV": {
+        "level": 7,
+        "const": 7,
+        "maxcombo": 769,
+        "is_const_unknown": false
+      },
+      "EXP": {
+        "level": 11,
+        "const": 11.3,
+        "maxcombo": 1319,
+        "is_const_unknown": false
+      },
+      "MAS": {
+        "level": 14,
+        "const": 14.2,
+        "maxcombo": 1587,
+        "is_const_unknown": false
+      }
+    }
+  }
+]
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `[].meta.id` | string | 楽曲のID |
+| `[].meta.title` | string | 楽曲名 |
+| `[].meta.genre` | string \| null | ジャンル名 |
+| `[].meta.artist` | string | アーティスト名 |
+| `[].meta.release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
+| `[].meta.bpm` | number \| null | BPM |
+| `[].data.BAS` | object \| null | BASIC譜面 |
+| `[].data.ADV` | object \| null | ADVANCED譜面 |
+| `[].data.EXP` | object \| null | EXPERT譜面 |
+| `[].data.MAS` | object \| null | MASTER譜面 |
+| `[].data.ULT` | object \| null | ULTIMA譜面 |
+| `[].data.*.level` | number | 表記レベル（.0または.5刻み） |
+| `[].data.*.const` | number | 譜面定数 |
+| `[].data.*.maxcombo` | number \| null | ノーツ数 |
+| `[].data.*.is_const_unknown` | boolean | 譜面定数が未確定の場合 `true` |
+
+譜面が存在しない難易度は `null` になります。
+
+---
+
+## GET `/compat/chunirec/2.0/music/show`
+
+指定された1楽曲の情報をchunirec互換形式で取得します。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/music/show?id=e9e66c56cb8388e9
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `id` | string | 必須 | 楽曲のID（16文字） |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "meta": {
+    "id": "e9e66c56cb8388e9",
+    "title": "GEMINI -C-",
+    "genre": "ORIGINAL",
+    "artist": "Tatsh",
+    "release": "2016-03-17",
+    "bpm": 180
+  },
+  "data": {
+    "BAS": {
+      "level": 4,
+      "const": 4,
+      "maxcombo": 549,
+      "is_const_unknown": false
+    },
+    "ADV": {
+      "level": 7,
+      "const": 7,
+      "maxcombo": 769,
+      "is_const_unknown": false
+    },
+    "EXP": {
+      "level": 11,
+      "const": 11.3,
+      "maxcombo": 1319,
+      "is_const_unknown": false
+    },
+    "MAS": {
+      "level": 14,
+      "const": 14.2,
+      "maxcombo": 1587,
+      "is_const_unknown": false
+    }
+  }
+}
+```
+
+フィールドの詳細は [GET `/compat/chunirec/2.0/music/showall`](#get-compatchunirec20musicshowall) を参照してください。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | クエリパラメータ `id` が未指定です |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+
+---
+
+## GET `/compat/chunirec/2.0/records/showall`
+
+指定したユーザーの通常譜面のプレイ済みレコードを、chunirec互換形式で取得します。未プレイ譜面とWORLD'S END譜面は含まれません。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/records/showall?user_name=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `user_name` | string | | 取得対象のユーザー名。未指定の場合はAPIトークン所有者自身のレコードを返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "records": [
+    {
+      "id": "6a88218b1a936bd3",
+      "diff": "EXP",
+      "level": 10,
+      "title": "B.B.K.K.B.K.K.",
+      "const": 10,
+      "score": 1003215,
+      "rating": 11.32,
+      "is_const_unknown": true,
+      "is_clear": true,
+      "is_fullcombo": false,
+      "is_alljustice": false,
+      "is_fullchain": false,
+      "genre": "VARIETY",
+      "updated_at": "1970-01-01T09:00:00+0900",
+      "is_played": true
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `records` | array | 通常譜面のプレイ済みレコード一覧 |
+| `records[].id` | string | 楽曲の識別ID（16桁） |
+| `records[].diff` | string | 難易度（`BAS`、`ADV`、`EXP`、`MAS`、`ULT`） |
+| `records[].level` | number | 表記レベル（.0または.5刻み） |
+| `records[].title` | string | 楽曲名 |
+| `records[].const` | number | 譜面定数 |
+| `records[].score` | number | スコア |
+| `records[].rating` | number | 単曲レーティング |
+| `records[].is_const_unknown` | boolean | 譜面定数が未確定の場合 `true` |
+| `records[].is_clear` | boolean | クリアランプが付いている場合 `true` |
+| `records[].is_fullcombo` | boolean | コンボランプがFULL COMBOまたはALL JUSTICEの場合 `true` |
+| `records[].is_alljustice` | boolean | コンボランプがALL JUSTICEの場合 `true` |
+| `records[].is_fullchain` | boolean | フルチェインランプが付いている場合 `true` |
+| `records[].genre` | string | ジャンル名 |
+| `records[].updated_at` | string | レコード更新日時（`YYYY-MM-DDTHH:mm:ss+0900`形式） |
+| `records[].is_played` | boolean | 常に `true` |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つかりません（非公開ユーザーを含む） |
+
+---
+
+## GET `/compat/chunirec/2.0/users/show`
+
+指定されたユーザーのプロフィールをchunirec互換形式で取得します。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/users/show?user_name=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `user_name` | string | | 取得対象のユーザー名。未指定の場合はAPIトークン所有者自身のプロフィールを返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "user_id": 0,
+  "player_name": "０ｘＦＦ３１",
+  "title": "Gate of Fate",
+  "title_rarity": "ultima",
+  "level": 245,
+  "rating": "17.46",
+  "rating_max": "17.46",
+  "classemblem": "inf",
+  "classemblem_base": null,
+  "is_joined_team": null,
+  "updated_at": "2026-06-22T08:39:49+09:00"
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `user_id` | number | 内部ユーザーIDを公開しないため常に `0` |
+| `player_name` | string | プレイヤー名 |
+| `title` | string \| null | スロット1の称号 |
+| `title_rarity` | string \| null | スロット1称号のレアリティ |
+| `level` | number | プレイヤーレベル |
+| `rating` | string \| null | レーティング（小数点以下2桁の文字列） |
+| `rating_max` | string \| null | 最大レーティング（現在は `rating` と同じ値） |
+| `classemblem` | string \| null | クラスエンブレム |
+| `classemblem_base` | string \| null | クラスエンブレムベース |
+| `is_joined_team` | null | チーム参加状態（常に `null`） |
+| `updated_at` | string | プレイヤーデータの最終更新日時（RFC3339形式） |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、非公開設定、またはプレイヤーデータ未連携 |

@@ -1,0 +1,165 @@
+---
+title: WORLD'S END
+description: WORLD'S END楽曲の一覧・詳細・スコア履歴のAPI。
+sidebar:
+  label: WORLD'S END
+  order: 2
+---
+
+import StaticApiUrl from '../../../components/StaticApiUrl.astro'
+import { Aside } from '@astrojs/starlight/components'
+
+WORLD'S END楽曲の一覧・詳細・スコア履歴を取得するAPIです。
+
+## GET `/v1/worldsend-songs`
+
+全WORLD'S END楽曲を取得します。削除済み楽曲は除外されます。WORLD'S ENDは1曲1譜面です。
+
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="v1/worldsend-songs.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
+
+**リクエスト**:
+
+```
+GET /v1/worldsend-songs
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "songs": [
+    {
+      "id": "f13e1a1f3285186c",
+      "title": "Garakuta Doll Play (sasakure.UK clutter remix)",
+      "reading": "GARAKUTADOLLPLAYSASAKUREUKCLUTTERREMIX",
+      "artist": "sasakure.UK",
+      "genre": "ORIGINAL",
+      "bpm": 256,
+      "release": "2016-03-17",
+      "jacket": "971c362a9b65209e",
+      "official_idx": "8024",
+      "charts": {
+        "WORLDSEND": {
+          "attribute": "改",
+          "level_star": 4,
+          "notes": 2525,
+          "notes_designer": "チュウニ譜面ボーイズ"
+        }
+      }
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `songs` | array | WORLD'S END楽曲の配列 |
+| `songs[].id` | string | 楽曲のID |
+| `songs[].title` | string | 楽曲名 |
+| `songs[].reading` | string \| null | 楽曲名の読み |
+| `songs[].artist` | string | アーティスト名 |
+| `songs[].genre` | string \| null | ジャンル名 |
+| `songs[].bpm` | number \| null | BPM |
+| `songs[].release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
+| `songs[].jacket` | string \| null | ジャケット画像ファイル名 |
+| `songs[].official_idx` | string | 公式ID |
+| `songs[].charts` | object | 譜面情報。キーは `"WORLDSEND"` 固定 |
+| `songs[].charts.WORLDSEND.attribute` | string \| null | WORLD'S END属性（光、蔵、改、狂 など） |
+| `songs[].charts.WORLDSEND.level_star` | number \| null | WORLD'S ENDレベル（1～5） |
+| `songs[].charts.WORLDSEND.notes` | number \| null | ノーツ数 |
+| `songs[].charts.WORLDSEND.notes_designer` | string \| null | ノーツデザイナー |
+
+---
+
+## GET `/v1/worldsend-songs/:id`
+
+指定されたWORLD'S END楽曲の詳細を取得します。
+
+**リクエスト**:
+
+```
+GET /v1/worldsend-songs/f13e1a1f3285186c
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `id` | string | 楽曲のID |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "id": "f13e1a1f3285186c",
+  "title": "Garakuta Doll Play (sasakure.UK clutter remix)",
+  "reading": "GARAKUTADOLLPLAYSASAKUREUKCLUTTERREMIX",
+  "artist": "sasakure.UK",
+  "genre": "ORIGINAL",
+  "bpm": 256,
+  "release": "2016-03-17",
+  "jacket": "971c362a9b65209e",
+  "official_idx": "8024",
+  "charts": {
+    "WORLDSEND": {
+      "attribute": "改",
+      "level_star": 4,
+      "notes": 2525,
+      "notes_designer": "チュウニ譜面ボーイズ"
+    }
+  }
+}
+```
+
+フィールドの詳細は [GET `/v1/worldsend-songs`](#get-v1worldsend-songs) を参照してください。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+
+---
+
+## GET `/v1/worldsend-songs/:id/score-history`
+
+指定WORLD'S END楽曲のスコア履歴を取得します。履歴は譜面ごとに最大50件で、レスポンス先頭の現行ベストを含めると最大51件です。
+
+**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
+
+**リクエスト**:
+
+```
+GET /v1/worldsend-songs/c953760500a52748/score-history?username=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `id` | string | WORLD'S END楽曲のID |
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `username` | string | ✓ | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+レスポンス形式は [GET `/v1/songs/:id/score-history/:difficulty`](/api/songs/#get-v1songsidscore-historydifficulty) と同一です。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `validation_failed` | 400 | `username` が未指定です |
+| `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
