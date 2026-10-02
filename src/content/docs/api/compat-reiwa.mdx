@@ -1,0 +1,104 @@
+---
+title: reiwa互換API
+description: reiwa互換形式のエンドポイント（/compat/reiwa/1）。
+sidebar:
+  label: reiwa互換API
+  order: 6
+---
+
+import StaticApiUrl from '../../../components/StaticApiUrl.astro'
+import { Aside } from '@astrojs/starlight/components'
+
+reiwa互換APIは外部ツールとの互換性を持つエンドポイントです。CHUNITHMのバージョン、楽曲・譜面データを取得できます。APIトークン認証を使用します。
+
+## GET `/compat/reiwa/1/chunithm_versions.json`
+
+リリース済みのCHUNITHMバージョン一覧を取得します。
+
+**リクエスト**:
+
+```
+GET /compat/reiwa/1/chunithm_versions.json
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+[
+  {
+    "version": "CHUNITHM",
+    "release": "2015-07-16"
+  },
+  {
+    "version": "CHUNITHM PLUS",
+    "release": "2016-02-04"
+  }
+]
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `version` | string | CHUNITHMのバージョン名 |
+| `release` | string | リリース日（`YYYY-MM-DD`） |
+
+リリース日の昇順で返します。
+
+## GET `/compat/reiwa/1/chunithm_record/original`
+
+WORLD'S ENDを除く全楽曲の通常譜面情報を、譜面単位のフラットな配列で取得します。削除済み楽曲は含まれません。
+
+<Aside title="キャッシュ済み静的データ">
+<StaticApiUrl path="compat/reiwa/1/chunithm_record/original.json" />
+
+APIトークンによる認証とレート制限なしで取得できます。最新のAPIレスポンスより最大で約6時間古い場合があるため、常に最新のデータが必要な場合は通常のAPIを使用してください。
+</Aside>
+
+**リクエスト**:
+
+```
+GET /compat/reiwa/1/chunithm_record/original
+Authorization: Bearer <APIトークン>
+```
+
+**レスポンス**: 200 OK
+
+```json
+[
+  {
+    "title": "B.B.K.K.B.K.K.",
+    "artist": "nora2r",
+    "img": "d739ba44da6798a0",
+    "genre": "VARIETY",
+    "const": 4,
+    "level": 4,
+    "diff": "BAS",
+    "notes": 333,
+    "unknown": 0,
+    "chunirec_id": "6a88218b1a936bd3",
+    "idx": "3",
+    "bpm": 170,
+    "release": 14370588,
+    "version": ""
+  }
+]
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `title` | string | 楽曲タイトル |
+| `artist` | string | アーティスト名 |
+| `img` | string | ジャケット画像識別子 |
+| `genre` | string | ジャンル名（`POPS&ANIME` は `POPS & ANIME` に変換） |
+| `const` | number | 譜面定数 |
+| `level` | number | 表記レベル（.5区切り。例: 13+ → 13.5） |
+| `diff` | string | 難易度（`BAS`、`ADV`、`EXP`、`MAS`、`ULT`） |
+| `notes` | number | ノーツ数 |
+| `unknown` | number | 譜面定数不明フラグ（0: 既知、1: 不明） |
+| `chunirec_id` | string | 楽曲の内部ID |
+| `idx` | string | 公式インデックス |
+| `bpm` | number | BPM |
+| `release` | number | リリース日のJST 0時Unixタイムスタンプ ÷ 100 |
+| `version` | string | バージョン名から `CHUNITHM ` を除去した名称（初代CHUNITHMは空文字） |
+
+`idx` の数値昇順、次に難易度順（BAS → ADV → EXP → MAS → ULT）で返します。

@@ -1,0 +1,28 @@
+---
+/*
+ * APIドキュメントは以前 /api/ の 1 ページにまとまっていたため、
+ * 旧URL（/api/#get-v1songs など）を分割後の各ページへ転送する。
+ * 見出しから対応表を組み立てるので、エンドポイント追加時の保守は不要。
+ */
+import { getCollection, render } from 'astro:content'
+
+const docs = await getCollection('docs')
+const pages = docs.filter((entry) => entry.id.startsWith('api/') && entry.id !== 'api/index')
+
+const anchors: Record<string, string> = {
+  'chunirec互換api-compatchunirec20': '/api/compat-chunirec/',
+  'reiwa互換api-compatreiwa1': '/api/compat-reiwa/',
+}
+for (const page of pages) {
+  const { headings } = await render(page)
+  for (const { slug } of headings) {
+    anchors[slug] ??= `/${page.id}/#${slug}`
+  }
+}
+---
+
+<script is:inline define:vars={{ anchors }}>
+	const hash = decodeURIComponent(location.hash.slice(1))
+	// 概要ページに残っている見出し（#認証 など）はそのまま表示する
+	if (hash && anchors[hash] && !document.getElementById(hash)) location.replace(anchors[hash])
+</script>

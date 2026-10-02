@@ -1,0 +1,439 @@
+---
+title: プレイヤー
+description: プレイヤー情報・RATING・公式指標履歴のAPI。
+sidebar:
+  label: プレイヤー
+  order: 3
+---
+
+プレイヤー情報、RATING、公式RATING・OVER POWERの履歴を取得するAPIです。
+
+## GET `/v1/users/:username/rating-op-history`
+
+CHUNITHM-NETから取得した公式RATING・公式OVER POWER・公式OP%の履歴を、現在値を先頭に新しい順で取得します。保存される履歴は最大500件で、現在値を含むレスポンスは最大501件です。
+
+**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto/rating-op-history
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "entries": [
+    {
+      "rating": 17.46,
+      "overpower": 103750.12,
+      "overpower_percent": 76.42,
+      "data_collected_at": "2026-09-24T12:34:56+09:00"
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `entries` | array | 現在値と保存済み履歴の配列（新しい順） |
+| `entries[].rating` | number | CHUNITHM-NETから取得した公式RATING |
+| `entries[].overpower` | number | CHUNITHM-NETから取得した公式OVER POWER値 |
+| `entries[].overpower_percent` | number \| null | CHUNITHM-NETから取得した公式OP%。記録開始前は `null` |
+| `entries[].data_collected_at` | string | データ取得日時（ISO8601） |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `player_metric_history_not_found` | 404 | プレイヤー未連携などにより履歴が存在しません |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
+## GET `/v1/users/:username/rating`
+
+指定されたユーザーの計算RATINGとレーティング枠だけを取得する軽量APIです。通常譜面全件の `standard`、WORLD'S ENDの `worldsend`、コースの `course` は返しません。
+
+**プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto/rating
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "rating": 17.4632,
+  "best_average": 17.5123,
+  "new_average": 17.3159,
+  "best": [],
+  "best_candidate": [],
+  "new": [],
+  "new_candidate": [],
+  "meta": {
+    "updated_at": "2026-06-21T23:58:02+09:00"
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `rating` | number \| null | BEST枠とNEW枠から計算したプレイヤーRATING |
+| `best_average` | number \| null | BEST枠の平均RATING |
+| `new_average` | number \| null | NEW枠の平均RATING |
+| `best` | array | ベスト枠レコード |
+| `best_candidate` | array | ベスト候補枠レコード |
+| `new` | array | 新曲枠レコード |
+| `new_candidate` | array | 新曲候補枠レコード |
+| `meta.updated_at` | string \| null | レーティング枠レコードの最終更新日時。対象レコードがなければプレイヤー更新日時、プレイヤー未連携なら `null` |
+
+各レコード要素は [GET `/v1/users/:username`](#get-v1usersusername) の `best` / `best_candidate` / `new` / `new_candidate` と同じ形式です。プレイヤー未連携時はRATINGと平均値が `null`、各配列が空になります。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
+## GET `/v1/users/:username`
+
+指定されたユーザーのプロフィールとスコアレコードを取得します。
+
+**プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。プレイヤーデータが未連携の場合は `player` と `records` が `null` になります。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `include_noplay` | boolean | | `true` を指定すると、未プレイの通常譜面とコースも補完して返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "username": "kjumanenobikto",
+  "player": {
+    "name": "０ｘＦＦ３１",
+    "level": 245,
+    "rating": 17.4632,
+    "class_emblem_id": 6,
+    "class_emblem_base_id": null,
+    "possession_id": 5,
+    "last_played_at": "2026-06-20T22:28:00+09:00",
+    "overpower_value": 103759.74,
+    "overpower_percent": 76.4308,
+    "official_overpower": 103750.12,
+    "official_overpower_percent": 76.42,
+    "honors": [
+      { "slot": 1, "name": "Gate of Fate", "type_name": "ultima", "image_url": "honor_bg_ultima.png" },
+      { "slot": 2, "name": "Arcaea", "type_name": "silver", "image_url": "honor_bg_silver.png" },
+      { "slot": 3, "name": "Gate of Doom", "type_name": "expert", "image_url": "honor_bg_expert.png" }
+    ],
+    "created_at": "2026-06-10T21:58:34+09:00",
+    "updated_at": "2026-06-22T08:39:49+09:00"
+  },
+  "records": {
+    "updated_at": "2026-06-21T23:58:02+09:00",
+    "best": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "7c19a08f165d9a9b",
+        "title": "祈 -我ら神祖と共に歩む者なり-",
+        "artist": "光吉猛修 VS 穴山大輔 VS Kai VS 水野健治 VS 大国奏音",
+        "const": 15.7,
+        "is_const_unknown": false,
+        "score": 1008280,
+        "justice_count": null,
+        "rating": 17.77,
+        "overpower": 89.67,
+        "overpower_percent": 95.9037,
+        "img": "aee87c06a25809db",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "best"
+      }
+    ],
+    "best_candidate": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "dd70f42fce1b3247",
+        "title": "Rebellion",
+        "artist": "Kai",
+        "const": 15.4,
+        "is_const_unknown": false,
+        "score": 1007646,
+        "justice_count": null,
+        "rating": 17.41,
+        "overpower": 87.215,
+        "overpower_percent": 94.7989,
+        "img": "f3f526bb5400bcb6",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "best_candidate"
+      }
+    ],
+    "new": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "f57d6fec0d075455",
+        "title": "YOUNITHM",
+        "artist": "大国奏音",
+        "const": 15.5,
+        "is_const_unknown": false,
+        "score": 1008932,
+        "justice_count": null,
+        "rating": 17.64,
+        "overpower": 89.645,
+        "overpower_percent": 96.9135,
+        "img": "a83a089481cb3703",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "new"
+      }
+    ],
+    "new_candidate": [
+      {
+        "updated_at": "2026-06-14T10:17:22+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "0c272957c22a66e0",
+        "title": "Phantom Crisis",
+        "artist": "t+pazolite vs Yuta Imai",
+        "const": 15.5,
+        "is_const_unknown": false,
+        "score": 1005241,
+        "justice_count": null,
+        "rating": 17.04,
+        "overpower": 85.24,
+        "overpower_percent": 92.1514,
+        "img": "691d65ce2e1e4129",
+        "clear_lamp": "HARD",
+        "combo_lamp": null,
+        "full_chain": null,
+        "slot": "new_candidate"
+      }
+    ],
+    "standard": [
+      {
+        "updated_at": "2026-06-21T23:58:02+09:00",
+        "is_played": true,
+        "is_op_target": true,
+        "difficulty": "MASTER",
+        "id": "5a25917e0249159b",
+        "title": "水晶世界 ～Fracture～",
+        "artist": "wa. remixed celas",
+        "const": 14.9,
+        "is_const_unknown": false,
+        "score": 1009566,
+        "justice_count": 65,
+        "rating": 17.05,
+        "overpower": 88.595,
+        "overpower_percent": 98.9888,
+        "img": "58a8b2d2241876b4",
+        "clear_lamp": "ABSOLUTE",
+        "combo_lamp": "ALL JUSTICE",
+        "full_chain": null,
+        "slot": null
+      }
+    ],
+    "worldsend": [
+      {
+        "updated_at": "2026-06-10T21:58:32+09:00",
+        "is_played": true,
+        "id": "c953760500a52748",
+        "title": "I Wanna",
+        "artist": "静香(CV.長谷川育美)「ワールドダイスター 夢のステラリウム」",
+        "level_star": 5,
+        "attribute": "招",
+        "notes": 2354,
+        "score": 987816,
+        "justice_count": null,
+        "img": "6cd072470f3b7ef9",
+        "clear_lamp": "CLEAR",
+        "combo_lamp": null,
+        "full_chain": null
+      }
+    ],
+    "course": [
+      {
+        "id": "7d5f5c42b9a8e301",
+        "idx": "50020",
+        "name": "クラス認定 Ⅲ",
+        "class": "3",
+        "is_played": true,
+        "score": 3012345,
+        "is_clear": true,
+        "combo_lamp": "FULL COMBO",
+        "updated_at": "2026-06-21T23:58:02+09:00"
+      }
+    ]
+  },
+  "updated_at": "2026-06-22T08:39:49+09:00"
+}
+```
+
+### トップレベル
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+| `player` | object \| null | プレイヤー情報。未連携の場合は `null` |
+| `records` | object \| null | スコアレコード。未連携の場合は `null` |
+| `updated_at` | string \| null | プレイヤーデータの最終更新日時（ISO8601）。未連携の場合は `null` |
+
+### `player`
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `name` | string | プレイヤー名 |
+| `level` | number | プレイヤーレベル |
+| `rating` | number | 保存済みスコアから算出したレーティング |
+| `class_emblem_id` | number \| null | クラスエンブレムID |
+| `class_emblem_base_id` | number \| null | クラスエンブレムベースID |
+| `possession_id` | number | ポゼッションID（1: normal、2: silver、3: gold、4: platina、5: rainbow） |
+| `last_played_at` | string \| null | 最終プレイ日時（ISO8601） |
+| `overpower_value` | number \| null | 保存済みスコアから計算したOVER POWER値 |
+| `overpower_percent` | number \| null | 現在の楽曲マスタと未解禁設定から計算したOVER POWER達成割合（%） |
+| `official_overpower` | number | CHUNITHM-NETから取得した公式OVER POWER値 |
+| `official_overpower_percent` | number \| null | CHUNITHM-NETから取得した公式OP%。記録開始前は `null` |
+| `honors` | array | 称号情報（スロット1～3） |
+| `honors[].slot` | number | スロット番号 |
+| `honors[].name` | string | 称号名 |
+| `honors[].type_name` | string | 称号タイプ |
+| `honors[].image_url` | string | 称号画像URL |
+| `created_at` | string | プレイヤーデータ作成日時 |
+| `updated_at` | string | プレイヤーデータ更新日時 |
+
+### `records`
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `updated_at` | string | レコードの最終更新日時 |
+| `best` | array | ベスト枠レコード |
+| `best_candidate` | array | ベスト候補枠レコード |
+| `new` | array | 新曲枠レコード |
+| `new_candidate` | array | 新曲候補枠レコード |
+| `standard` | array | 通常譜面の全レコード |
+| `worldsend` | array | WORLD'S ENDの全レコード |
+| `course` | array | コースレコード |
+
+### レコード要素（`best` / `best_candidate` / `new` / `new_candidate` / `standard`）
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `is_played` | boolean | プレイ済みかどうか（未プレイ補完データは `false`） |
+| `is_op_target` | boolean | OVER POWER計算の対象譜面かどうか |
+| `updated_at` | string \| null | 更新日時。未プレイ補完データは `null` |
+| `difficulty` | string | 難易度名 |
+| `id` | string | 楽曲のID |
+| `title` | string | 楽曲名 |
+| `artist` | string | アーティスト名 |
+| `const` | number | 譜面定数 |
+| `is_const_unknown` | boolean | 譜面定数が未確定かどうか |
+| `score` | number | スコア |
+| `justice_count` | number \| null | JUSTICE数 |
+| `rating` | number | 単曲レーティング |
+| `overpower` | number | 単曲OVER POWER値 |
+| `overpower_percent` | number | 単曲OVER POWER達成割合（%） |
+| `img` | string | ジャケット画像ファイル名 |
+| `clear_lamp` | string \| null | クリアランプ |
+| `combo_lamp` | string \| null | コンボランプ |
+| `full_chain` | string \| null | フルチェイン |
+| `slot` | string \| null | スロット |
+
+### レコード要素（`worldsend`）
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `is_played` | boolean | プレイ済みかどうか |
+| `updated_at` | string \| null | 更新日時 |
+| `id` | string | 楽曲のID |
+| `title` | string | 楽曲名 |
+| `artist` | string | アーティスト名 |
+| `level_star` | number \| null | WORLD'S ENDレベル |
+| `attribute` | string \| null | WORLD'S END属性 |
+| `notes` | number \| null | ノーツ数 |
+| `score` | number | スコア |
+| `justice_count` | number \| null | JUSTICE数 |
+| `img` | string | ジャケット画像ファイル名 |
+| `clear_lamp` | string \| null | クリアランプ |
+| `combo_lamp` | string \| null | コンボランプ |
+| `full_chain` | string \| null | フルチェイン |
+
+### レコード要素（`course`）
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `id` | string | コースのID（16文字の小文字16進数） |
+| `idx` | string | 公式ID |
+| `name` | string | コース名 |
+| `class` | string | コースクラス（`1`～`5`、`inf`、`extra`） |
+| `is_played` | boolean | プレイ済みかどうか（未プレイ補完データは `false`） |
+| `score` | number | コーススコア（未プレイ補完データは `0`） |
+| `is_clear` | boolean | クリア済みかどうか |
+| `combo_lamp` | string \| null | コンボランプ。未設定または `NONE` の場合は `null` |
+| `updated_at` | string \| null | 更新日時。未プレイ補完データは `null` |
+
+### プレイヤー未連携時のレスポンス
+
+```json
+{
+  "username": "kjumanenobikto",
+  "player": null,
+  "records": null,
+  "updated_at": null
+}
+```
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
