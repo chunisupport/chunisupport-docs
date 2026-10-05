@@ -1,0 +1,152 @@
+---
+/*
+ * shields.ioのバッジを作成するコンポーネント
+ */
+
+import {
+    PUBLIC_API_BASE_URL,
+    PUBLIC_APP_URL,
+} from 'astro:env/server'
+
+interface Props {
+    label: string
+    endpoint: string
+    defaultParams: Record<string, string>
+    linkTo: string
+}
+
+const { label, endpoint, defaultParams, linkTo } = Astro.props
+
+---
+
+<div
+  class="badge-maker"
+  data-badge-maker
+  data-badge-maker-label={label}
+  data-badge-maker-endpoint={endpoint}
+  data-badge-maker-link-to={linkTo}
+  data-badge-maker-base-url={PUBLIC_API_BASE_URL}
+  data-badge-maker-app-url={PUBLIC_APP_URL}
+>
+  {Object.entries(defaultParams).map(([key, example]) => (
+    <div class="badge-maker__param">
+      <label for={`badge-maker-${key}`}>:{key}</label>
+      <input id={`badge-maker-${key}`} type="text" value={example} data-badge-maker-param data-badge-maker-param-key={key} />
+    </div>
+  ))}
+  <strong>プレビュー</strong>
+  <img src={`https://img.shields.io/badge/${encodeURIComponent(label)}-Loading-lightgrey`} alt="バッジのプレビュー" />
+  <strong>Markdown</strong>
+  <code data-badge-maker-value></code>
+  <div class="badge-maker__actions">
+    <button type="button" data-badge-maker-copy>コピー</button>
+    <span class="badge-maker__status" role="status" aria-live="polite"></span>
+  </div>
+</div>
+
+<script>
+  for (const container of document.querySelectorAll<HTMLElement>('[data-badge-maker]')) {
+    const value = container.querySelector<HTMLElement>('[data-badge-maker-value]')
+    const fields = container.querySelectorAll<HTMLInputElement>('[data-badge-maker-param]')
+    const preview = container.querySelector<HTMLImageElement>('img')
+
+    let updateTimeout: ReturnType<typeof setTimeout> | null = null
+
+    const generateBadgeUrl = () => {
+      const label = container.dataset.badgeMakerLabel ?? ''
+      let resolvedEndpoint = container.dataset.badgeMakerEndpoint ?? ''
+      let resolvedLinkTo = container.dataset.badgeMakerLinkTo ?? ''
+      const baseUrl = container.dataset.badgeMakerBaseUrl ?? ''
+      const appUrl = container.dataset.badgeMakerAppUrl ?? ''
+      for (const field of fields) {
+        const key = field.dataset.badgeMakerParamKey
+        resolvedEndpoint = resolvedEndpoint.replace(`:${key}`, encodeURIComponent(field.value))
+        resolvedLinkTo = resolvedLinkTo.replace(`:${key}`, encodeURIComponent(field.value))
+      }
+      const badgeUrl = `https://img.shields.io/endpoint?url=${encodeURIComponent(`${baseUrl}${resolvedEndpoint}`)}`
+      if (value) value.textContent = `[![${label}](${badgeUrl})](${appUrl}${resolvedLinkTo})`
+
+      if (updateTimeout) clearTimeout(updateTimeout)
+      updateTimeout = setTimeout(() => {
+        if (preview) preview.src = badgeUrl
+      }, 100)
+    }
+
+    for (const field of fields) {
+      field.addEventListener('input', generateBadgeUrl)
+    }
+
+    generateBadgeUrl()
+
+    const button = container.querySelector<HTMLButtonElement>('[data-badge-maker-copy]')
+    const status = container.querySelector<HTMLElement>('.badge-maker__status')
+
+    button?.addEventListener('click', async () => {
+      if (!value || !status) return
+
+      try {
+        await navigator.clipboard.writeText(value.textContent ?? '')
+        status.textContent = 'コピーしました'
+      } catch {
+        status.textContent = 'コピーに失敗しました。手動でコピーしてください。'
+      }
+    })
+  }
+</script>
+
+<style>
+  .badge-maker {
+    margin-block: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--sl-color-gray-6);
+  }
+
+  .badge-maker__param {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-family: var(--sl-font-mono);
+  }
+
+  code {
+    display: block;
+    overflow-wrap: anywhere;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--sl-color-black);
+    font-size: var(--sl-text-xs);
+    line-height: 1.6;
+  }
+
+  .badge-maker__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  button {
+    padding: 0.5rem 0.875rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: var(--sl-color-accent-high);
+    color: var(--sl-color-black);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: var(--sl-color-accent);
+  }
+
+  .badge-maker__status {
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+  }
+</style>
