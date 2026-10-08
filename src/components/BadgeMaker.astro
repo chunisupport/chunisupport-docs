@@ -7,6 +7,7 @@ import {
     PUBLIC_API_BASE_URL,
     PUBLIC_APP_URL,
 } from 'astro:env/server'
+import crypto from 'node:crypto'
 
 interface Props {
     label: string
@@ -16,6 +17,8 @@ interface Props {
 }
 
 const { label, endpoint, defaultParams, linkTo } = Astro.props
+
+const nonce = crypto.randomUUID()
 
 ---
 
@@ -28,14 +31,23 @@ const { label, endpoint, defaultParams, linkTo } = Astro.props
   data-badge-maker-base-url={PUBLIC_API_BASE_URL}
   data-badge-maker-app-url={PUBLIC_APP_URL}
 >
-  {Object.entries(defaultParams).map(([key, example]) => (
-    <div class="badge-maker__param">
-      <label for={`badge-maker-${key}`}>:{key}</label>
-      <input id={`badge-maker-${key}`} type="text" value={example} data-badge-maker-param data-badge-maker-param-key={key} />
-    </div>
-  ))}
+  <strong>パラメータ</strong>
+  <div class="badge-maker__param_container">
+    {Object.entries(defaultParams).map(([key, example]) => (
+      <label for={`badge-maker-${nonce}-${key}`}>:{key}</label>
+      <input
+        class="badge-maker__input"
+        id={`badge-maker-${nonce}-${key}`}
+        type="text"
+        value={example}
+        data-badge-maker-param
+        data-badge-maker-param-key={key}
+      />
+    ))}
+  </div>
   <strong>プレビュー</strong>
-  <img src={`https://img.shields.io/badge/${encodeURIComponent(label)}-Loading-lightgrey`} alt="バッジのプレビュー" />
+  <!-- 位置が動きすぎる（CLS）のを防ぐため、適当な初期値を設定しておく -->
+  <img src={`https://img.shields.io/badge/Loading-lightgrey`} alt="バッジのプレビュー" />
   <strong>Markdown</strong>
   <code data-badge-maker-value></code>
   <div class="badge-maker__actions">
@@ -128,6 +140,23 @@ const { label, endpoint, defaultParams, linkTo } = Astro.props
     align-items: center;
     gap: 0.75rem;
     margin-top: 0.75rem;
+  }
+
+  .badge-maker__param_container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .badge-maker__input {
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding-inline-start: 0.75rem;
+    padding-inline-end: 0.5rem;
+    background-color: var(--sl-color-black);
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+    width: 100%;
   }
 
   button {
