@@ -85,14 +85,14 @@ Authorization: Bearer <APIトークン>
 
 ## GET `/v1/users/:username/records/courses`
 
-指定されたユーザーのコースレコードを取得します。デフォルトではプレイ済みレコードだけを返します。
+指定されたユーザーのコースレコードを取得します。未プレイのコースも常に補完して返します（`is_played` が `false`、`score` が `0`、`updated_at` が `null`）。追加のクエリパラメータは不要です。
 
 **プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。
 
 **リクエスト**:
 
 ```
-GET /v1/users/kjumanenobikto/records/courses?include_noplay=true
+GET /v1/users/kjumanenobikto/records/courses
 Authorization: Bearer <APIトークン>
 ```
 
@@ -101,12 +101,6 @@ Authorization: Bearer <APIトークン>
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
 | `username` | string | 対象ユーザー名 |
-
-**クエリパラメータ**:
-
-| パラメータ | 型 | 必須 | 説明 |
-| ---------- | -- | ---- | ---- |
-| `include_noplay` | boolean | | `true` を指定すると未プレイコースも補完します。省略時は `false` です |
 
 **レスポンス**: 200 OK
 
