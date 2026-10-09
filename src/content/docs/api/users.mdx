@@ -61,7 +61,7 @@ Authorization: Bearer <APIトークン>
 
 ## GET `/v1/users/:username/rating`
 
-指定されたユーザーの計算RATINGとレーティング枠だけを取得する軽量APIです。通常譜面全件の `standard`、WORLD'S ENDの `worldsend`、コースの `course` は返しません。
+指定されたユーザーの計算RATINGとレーティング枠だけを取得する軽量APIです。通常譜面全件の `standard`、WORLD'S ENDの `worldsend`、コースの `course` は返しません。レーティング枠はプレイ済みレコードから算出するため、未プレイ補完データは含まれません。
 
 **プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。
 
@@ -122,6 +122,8 @@ Authorization: Bearer <APIトークン>
 
 **プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。プレイヤーデータが未連携の場合は `player` と `records` が `null` になります。
 
+`records` には、未プレイの通常譜面・WORLD'S END譜面・コースも常に補完して返します。補完されたレコードは `is_played` が `false`、`updated_at` が `null` になります。追加のクエリパラメータは不要です。
+
 **リクエスト**:
 
 ```
@@ -134,12 +136,6 @@ Authorization: Bearer <APIトークン>
 | パラメータ | 型 | 説明 |
 | ---------- | -- | ---- |
 | `username` | string | ユーザー名 |
-
-**クエリパラメータ**:
-
-| パラメータ | 型 | 必須 | 説明 |
-| ---------- | -- | ---- | ---- |
-| `include_noplay` | boolean | | `true` を指定すると、未プレイの通常譜面とコースも補完して返します |
 
 **レスポンス**: 200 OK
 
