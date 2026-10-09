@@ -68,6 +68,7 @@ Authorization: Bearer <APIトークン>
       "id": "e9e66c56cb8388e9",
       "title": "GEMINI -C-",
       "reading": "GEMINIC",
+      "name_folder_code": "EFGH",
       "artist": "Tatsh",
       "genre": "ORIGINAL",
       "bpm": 180,
@@ -116,6 +117,7 @@ Authorization: Bearer <APIトークン>
 | `songs[].id` | string | 楽曲のID（16進数16文字） |
 | `songs[].title` | string | 楽曲名 |
 | `songs[].reading` | string \| null | 楽曲名の読み |
+| `songs[].name_folder_code` | string | 楽曲名順フォルダのコード（例: `EFGH`、`A`、`NUMBER`）。`reading`（未設定時は`title`）から自動判定される読み取り専用項目 |
 | `songs[].artist` | string | アーティスト名 |
 | `songs[].genre` | string \| null | ジャンル名 |
 | `songs[].bpm` | number \| null | BPM |
@@ -268,6 +270,7 @@ Authorization: Bearer <APIトークン>
   "id": "e9e66c56cb8388e9",
   "title": "GEMINI -C-",
   "reading": "GEMINIC",
+  "name_folder_code": "EFGH",
   "artist": "Tatsh",
   "genre": "ORIGINAL",
   "bpm": 180,
