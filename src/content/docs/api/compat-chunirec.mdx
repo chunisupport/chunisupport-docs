@@ -236,7 +236,68 @@ Authorization: Bearer <APIトークン>
 
 ---
 
+## GET `/compat/chunirec/2.0/records/profile`
+
+指定されたユーザーのプロフィールをchunirec互換形式で取得します。
+
+**リクエスト**:
+
+```
+GET /compat/chunirec/2.0/records/profile?user_name=kjumanenobikto
+Authorization: Bearer <APIトークン>
+```
+
+**クエリパラメータ**:
+
+| パラメータ | 型 | 必須 | 説明 |
+| ---------- | -- | ---- | ---- |
+| `user_name` | string | | 取得対象のユーザー名。未指定の場合はAPIトークン所有者自身のプロフィールを返します |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "user_id": 0,
+  "player_name": "０ｘＦＦ３１",
+  "title": "Gate of Fate",
+  "title_rarity": "ultima",
+  "level": 245,
+  "rating": 17.46,
+  "rating_max": 17.46,
+  "classemblem": "inf",
+  "classemblem_base": null,
+  "is_joined_team": null,
+  "updated_at": "2026-06-22T08:39:49+09:00"
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `user_id` | number | 内部ユーザーIDを公開しないため常に `0` |
+| `player_name` | string | プレイヤー名 |
+| `title` | string \| null | スロット1の称号 |
+| `title_rarity` | string \| null | スロット1称号のレアリティ |
+| `level` | number | プレイヤーレベル |
+| `rating` | number \| null | レーティング（小数点以下2桁で切り捨てた数値） |
+| `rating_max` | number \| null | 最大レーティング（現在は `rating` と同じ値） |
+| `classemblem` | string \| null | クラスエンブレム |
+| `classemblem_base` | string \| null | クラスエンブレムベース |
+| `is_joined_team` | null | チーム参加状態（常に `null`） |
+| `updated_at` | string | プレイヤーデータの最終更新日時（RFC3339形式） |
+
+プレイヤー未連携の場合は `200 OK` とJSONの `null` を返します。レーティング未設定の場合、`rating`・`rating_max` はともに `null` です。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |
+
+---
+
 ## GET `/compat/chunirec/2.0/users/show`
+
+Deprecatedです。新規利用には `GET /compat/chunirec/2.0/records/profile` を使用してください。既存利用者向けに `rating`・`rating_max` を文字列で返します。それ以外のレスポンス項目とアクセス制御は `records/profile` と同じです。
 
 指定されたユーザーのプロフィールをchunirec互換形式で取得します。
 
@@ -289,4 +350,4 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
-| `user_not_found` | 404 | ユーザーが見つからない、非公開設定、またはプレイヤーデータ未連携 |
+| `user_not_found` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |
