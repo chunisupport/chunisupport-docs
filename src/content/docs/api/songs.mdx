@@ -27,9 +27,9 @@ Authorization: Bearer <APIトークン>
 ```json
 {
   "versions": [
-    { "name": "CHUNITHM", "released_at": "2015-07-16" },
-    { "name": "CHUNITHM PLUS", "released_at": "2016-02-04" },
-    { "name": "CHUNITHM AIR", "released_at": "2016-08-25" }
+    { "name": "CHUNITHM", "short_name": "ORI", "released_at": "2015-07-16" },
+    { "name": "CHUNITHM PLUS", "short_name": "ORI+", "released_at": "2016-02-04" },
+    { "name": "CHUNITHM AIR", "short_name": "AIR", "released_at": "2016-08-25" }
   ]
 }
 ```
@@ -38,6 +38,7 @@ Authorization: Bearer <APIトークン>
 | ---------- | -- | ---- |
 | `versions` | array | 起動日時点でリリース済みのバージョン一覧（リリース日昇順） |
 | `versions[].name` | string | バージョン名 |
+| `versions[].short_name` | string | 表示幅を抑えるための超ショート名（例: `CRY+`） |
 | `versions[].released_at` | string | リリース日（`YYYY-MM-DD` 形式） |
 
 ---
