@@ -43,6 +43,7 @@ Authorization: Bearer <APIトークン>
       "release": "2016-03-17",
       "jacket": "971c362a9b65209e",
       "official_idx": "8024",
+      "is_new": false,
       "charts": {
         "WORLDSEND": {
           "attribute": "改",
@@ -68,6 +69,7 @@ Authorization: Bearer <APIトークン>
 | `songs[].release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
 | `songs[].jacket` | string \| null | ジャケット画像ファイル名 |
 | `songs[].official_idx` | string | 公式ID |
+| `songs[].is_new` | boolean | 最新の2週間ごとの更新で追加された楽曲の場合に `true` |
 | `songs[].charts` | object | 譜面情報。キーは `"WORLDSEND"` 固定 |
 | `songs[].charts.WORLDSEND.attribute` | string \| null | WORLD'S END属性（光、蔵、改、狂 など） |
 | `songs[].charts.WORLDSEND.level_star` | number \| null | WORLD'S ENDレベル（1～5） |
@@ -106,6 +108,7 @@ Authorization: Bearer <APIトークン>
   "release": "2016-03-17",
   "jacket": "971c362a9b65209e",
   "official_idx": "8024",
+  "is_new": false,
   "charts": {
     "WORLDSEND": {
       "attribute": "改",
