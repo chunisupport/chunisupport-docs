@@ -19,10 +19,20 @@ for (const page of pages) {
     anchors[slug] ??= `/${page.id}/#${slug}`
   }
 }
+
+// script 要素の本文として埋め込む。< をエスケープして </script> を防ぐ。
+const anchorsJson = JSON.stringify(anchors).replaceAll('<', '\\u003c')
 ---
 
-<script is:inline define:vars={{ anchors }}>
-	const hash = decodeURIComponent(location.hash.slice(1))
-	// 概要ページに残っている見出し（#認証 など）はそのまま表示する
-	if (hash && anchors[hash] && !document.getElementById(hash)) location.replace(anchors[hash])
+<script type="application/json" id="api-legacy-anchors" is:inline set:html={anchorsJson} />
+<script>
+  import { legacyAnchorRedirectTarget } from '../lib/legacyAnchorRedirect'
+
+  const raw = document.getElementById('api-legacy-anchors')?.textContent ?? '{}'
+  const anchors = JSON.parse(raw) as Record<string, unknown>
+  // 概要ページに残っている見出し（#認証 など）はそのまま表示する
+  const target = legacyAnchorRedirectTarget(anchors, location.hash, (id) =>
+    document.getElementById(id) !== null,
+  )
+  if (target) location.replace(target)
 </script>
