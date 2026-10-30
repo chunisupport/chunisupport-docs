@@ -148,6 +148,8 @@ Authorization: Bearer <APIトークン>
     "rating": 17.4632,
     "class_emblem_id": 6,
     "class_emblem_base_id": null,
+    "class_emblem": "inf",
+    "class_emblem_base": null,
     "possession_id": 5,
     "last_played_at": "2026-06-20T22:28:00+09:00",
     "overpower_value": 103759.74,
@@ -331,8 +333,10 @@ Authorization: Bearer <APIトークン>
 | `name` | string | プレイヤー名 |
 | `level` | number | プレイヤーレベル |
 | `rating` | number | 保存済みスコアから算出したレーティング |
-| `class_emblem_id` | number \| null | クラスエンブレムID |
-| `class_emblem_base_id` | number \| null | クラスエンブレムベースID |
+| `class_emblem_id` | number \| null | クラスエンブレムのマスタID。未設定時は `null` |
+| `class_emblem_base_id` | number \| null | クラスエンブレムベースのマスタID。未設定時は `null` |
+| `class_emblem` | string \| null | `class_emblem_id` に対応するマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
+| `class_emblem_base` | string \| null | `class_emblem_base_id` に対応するマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
 | `possession_id` | number | ポゼッションID（1: normal、2: silver、3: gold、4: platina、5: rainbow） |
 | `last_played_at` | string \| null | 最終プレイ日時（ISO8601） |
 | `overpower_value` | number \| null | 保存済みスコアから計算したOVER POWER値 |

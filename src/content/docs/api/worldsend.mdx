@@ -37,12 +37,14 @@ Authorization: Bearer <APIトークン>
       "id": "f13e1a1f3285186c",
       "title": "Garakuta Doll Play (sasakure.UK clutter remix)",
       "reading": "GARAKUTADOLLPLAYSASAKUREUKCLUTTERREMIX",
+      "name_folder_code": "EFGH",
       "artist": "sasakure.UK",
       "genre": "ORIGINAL",
       "bpm": 256,
       "release": "2016-03-17",
       "jacket": "971c362a9b65209e",
       "official_idx": "8024",
+      "is_new": false,
       "charts": {
         "WORLDSEND": {
           "attribute": "改",
@@ -62,12 +64,14 @@ Authorization: Bearer <APIトークン>
 | `songs[].id` | string | 楽曲のID |
 | `songs[].title` | string | 楽曲名 |
 | `songs[].reading` | string \| null | 楽曲名の読み |
+| `songs[].name_folder_code` | string | 楽曲名順フォルダのコード（例: `EFGH`、`A`、`NUMBER`）。`reading`（未設定時は`title`）から自動判定される読み取り専用項目 |
 | `songs[].artist` | string | アーティスト名 |
 | `songs[].genre` | string \| null | ジャンル名 |
 | `songs[].bpm` | number \| null | BPM |
 | `songs[].release` | string \| null | リリース日（`YYYY-MM-DD` 形式） |
 | `songs[].jacket` | string \| null | ジャケット画像ファイル名 |
 | `songs[].official_idx` | string | 公式ID |
+| `songs[].is_new` | boolean | 最新の2週間ごとの更新で追加された楽曲の場合に `true` |
 | `songs[].charts` | object | 譜面情報。キーは `"WORLDSEND"` 固定 |
 | `songs[].charts.WORLDSEND.attribute` | string \| null | WORLD'S END属性（光、蔵、改、狂 など） |
 | `songs[].charts.WORLDSEND.level_star` | number \| null | WORLD'S ENDレベル（1～5） |
@@ -100,12 +104,14 @@ Authorization: Bearer <APIトークン>
   "id": "f13e1a1f3285186c",
   "title": "Garakuta Doll Play (sasakure.UK clutter remix)",
   "reading": "GARAKUTADOLLPLAYSASAKUREUKCLUTTERREMIX",
+  "name_folder_code": "EFGH",
   "artist": "sasakure.UK",
   "genre": "ORIGINAL",
   "bpm": 256,
   "release": "2016-03-17",
   "jacket": "971c362a9b65209e",
   "official_idx": "8024",
+  "is_new": false,
   "charts": {
     "WORLDSEND": {
       "attribute": "改",

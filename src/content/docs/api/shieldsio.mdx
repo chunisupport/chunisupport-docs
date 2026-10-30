@@ -1,0 +1,93 @@
+---
+title: shields.ioバッジ
+description: shields.io用のエンドポイント（/badges）。
+sidebar:
+  label: shields.ioバッジ
+  order: 7
+---
+
+import BadgeMaker from '../../../components/BadgeMaker.astro'
+
+shields.ioで使用するためのエンドポイントです。
+スタイルの上書きなどは[shields.io](https://shields.io/badges/endpoint-badge)のドキュメントを参照してください。
+
+## GET `/badges/users/:username/rating`
+
+CHUNITHM-NETから取得した公式RATINGを、shields.ioのバッジとして取得します。
+
+**パスパラメータ:**
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+
+<BadgeMaker
+  label="CHUNITHM RATING"
+  endpoint="/badges/users/:username/rating"
+  defaultParams={{
+    username: "sevenc7c"
+  }}
+  linkTo="/users/:username"
+/>
+
+## GET `/badges/users/:username/rating-calculated`
+
+計算RATINGを、shields.ioのバッジとして取得します。
+
+**パスパラメータ:**
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+
+<BadgeMaker
+  label="CHUNITHM RATING"
+  endpoint="/badges/users/:username/rating-calculated"
+  defaultParams={{
+    username: "sevenc7c"
+  }}
+  linkTo="/users/:username"
+/>
+
+
+## GET `/badges/users/:username/overpower`
+
+CHUNITHM-NETから取得した公式OVER POWER値を、shields.ioのバッジとして取得します。
+
+背景色はデフォルトではポゼッションの色になります。
+
+**パスパラメータ:**
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+
+<BadgeMaker
+  label="CHUNITHM OVER POWER"
+  endpoint="/badges/users/:username/overpower"
+  defaultParams={{
+    username: "sevenc7c"
+  }}
+  linkTo="/users/:username"
+/>
+
+## GET `/badges/users/:username/overpower-percent`
+
+CHUNITHM-NETから取得した公式OP%値を、shields.ioのバッジとして取得します。
+
+背景色はデフォルトではポゼッションの色になります。
+
+**パスパラメータ:**
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | ユーザー名 |
+
+<BadgeMaker
+  label="CHUNITHM OVER POWER"
+  endpoint="/badges/users/:username/overpower-percent"
+  defaultParams={{
+    username: "sevenc7c"
+  }}
+  linkTo="/users/:username"
+/>
