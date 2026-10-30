@@ -10,13 +10,18 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro check && astro build",
+    "test": "node --experimental-strip-types --test src/lib/legacyAnchorRedirect.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.40.0",
     "astro": "^6.4.8",
-    "sharp": "^0.35.2"
+    "sharp": "^0.35.5"
+  },
+  "overrides": {
+    "sharp": "$sharp",
+    "esbuild": "0.28.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
