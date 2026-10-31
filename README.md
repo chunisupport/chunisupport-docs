@@ -4,7 +4,7 @@ ChuniSupportのガイドサイトです。AstroとStarlightで構築していま
 
 ## ローカル開発
 
-Node.js 22.12.0以上が必要です。
+Node.js 22.23.4以上が必要です（Astro 7.4系の要件）。
 
 ```sh
 npm install
@@ -37,7 +37,7 @@ Cloudflare PagesでGitリポジトリを接続し、次の値を設定します�
 | Framework preset | Astro |
 | Build command | `npm run build` |
 | Build output directory | `dist` |
-| Environment variable | `NODE_VERSION=22.12.0` |
+| Environment variable | `NODE_VERSION=22.23.4` |
 | Environment variable | `SITE_URL=https://docs.chunisupport.net` |
 
 このサイトは静的出力です。Cloudflare Workers用のAstroアダプターやWrangler設定は使用しません。
