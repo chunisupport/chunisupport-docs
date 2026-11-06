@@ -4,7 +4,7 @@ ChuniSupportのガイドサイトです。AstroとStarlightで構築していま
 
 ## ローカル開発
 
-Node.js 22.23.4以上が必要です。
+Node.js 22.23.4以上が必要です（Astro 7.4系の要件）。
 
 ```sh
 npm install
