@@ -15,6 +15,34 @@ chunirecとの互換性を持つエンドポイントです。`/v1` と同様に
 楽曲IDにはChuniSupportのIDを使用してください。chunirecで使用されている楽曲IDとは異なるため、chunirecの楽曲IDを指定しても正しく動作しません。楽曲IDは、このページに記載されている他のchunirec互換APIから取得できます。
 :::
 
+## エラーレスポンス
+
+標準APIとは異なり、数値の `error.code` と互換仕様のメッセージを返します。
+
+```json
+{
+  "error": {
+    "code": 503,
+    "message": "service unavailable.",
+    "additional_message": ""
+  }
+}
+```
+
+| HTTP / `error.code` | `error.message` | 説明 |
+| --- | --- | --- |
+| 400 | `bad request.` | 互換仕様上の不正リクエスト。入力検証エラーは下記の503に変換されます |
+| 404 | `not found.` | 対象の楽曲・ユーザーが存在しない、または閲覧権限がない場合など |
+| 405 | `the requested method is not allowed.` | 互換仕様上のメソッド不許可 |
+| 429 | `too many requests.` | レート制限の超過 |
+| 503 | `service unavailable.` | APIトークン未指定・無効、入力検証エラー、メンテナンス中、サーバー内部エラーなど |
+
+`additional_message` は現在、空文字列です。標準APIの `invalid_token`、`validation_failed`、`user_not_found` などの文字列コードは返しません。
+
+未登録パスとメソッド不一致は、認証・メンテナンス判定より前に404を返します。クライアント切断はHTTP 499として記録します。
+
+[レート制限](/api/#レートリミット)と[メンテナンス中の利用](/api/#メンテナンス中の利用)も参照してください。メンテナンス遮断時の本文も上記の503と同じ形式です。
+
 ## GET `/compat/chunirec/2.0/music/showall`
 
 WORLD'S ENDを除く全楽曲をchunirec互換形式で取得します。
@@ -161,8 +189,8 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
-| `validation_failed` | 400 | クエリパラメータ `id` が未指定です |
-| `song_not_found` | 404 | 指定された楽曲が見つかりません |
+| `503` / `service unavailable.` | 503 | クエリパラメータ `id` が未指定、または形式が不正です |
+| `404` / `not found.` | 404 | 指定された楽曲が見つかりません |
 
 ---
 
@@ -232,7 +260,7 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
-| `user_not_found` | 404 | ユーザーが見つかりません（非公開ユーザーを含む） |
+| `404` / `not found.` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |
 
 ---
 
@@ -291,7 +319,7 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
-| `user_not_found` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |
+| `404` / `not found.` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |
 
 ---
 
@@ -350,4 +378,4 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
-| `user_not_found` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |
+| `404` / `not found.` | 404 | ユーザーが見つからない、またはアクセス権のない非公開ユーザー |

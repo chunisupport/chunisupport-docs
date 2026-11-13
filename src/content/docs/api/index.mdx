@@ -58,7 +58,7 @@ APIトークンはChuniSupportの設定画面から発行できます。トー�
 
 公開ユーザーのデータを取得する場合も、有効なAPIトークンが必要です。非公開ユーザーのデータは、本人または承認済みフレンドのAPIトークンで参照できます。
 
-楽曲情報の更新（`PUT /v1/songs`、`PATCH /v1/songs/chart-constant`）には、`read_write` トークンと、トークン所有者の **EDITOR** または **ADMIN** 権限の両方が必要です。`read_write` トークンだけではユーザーの権限は拡張されません。
+楽曲情報の更新（`PUT /v1/songs`、`PATCH /v1/songs/chart-constant`）とコースの更新（`PUT /v1/courses/:id`）には、`read_write` トークンと、トークン所有者の **EDITOR** または **ADMIN** 権限の両方が必要です。コースの作成（`POST /v1/courses`）には、`read_write` トークンと **ADMIN** 権限が必要です。`read_write` トークンだけではユーザーの権限は拡張されません。
 
 ## レートリミット
 
@@ -72,16 +72,21 @@ APIトークンはChuniSupportの設定画面から発行できます。トー�
 
 制限を超えた場合は `429 Too Many Requests` が返ります。
 
+## メンテナンス中の利用
+
+メンテナンス中は、トークン所有者が **EDITOR** または **ADMIN** の場合だけAPIを利用できます。一般ユーザー・EXTDEV、およびトークン未指定・無効の場合は、`503 Service Unavailable` を返します。通過できる場合も、各エンドポイントの認証・権限要件は通常どおり適用されます。
+
+標準APIでは `maintenance_mode` を返し、レスポンスヘッダーに `Retry-After: 60` と `Cache-Control: no-store` を付けます。互換APIも同じヘッダーを返しますが、本文は各互換APIのエラー形式になります。
+
 ## エラーレスポンス
 
-エラー時は以下の形式で返ります。
+標準API（`/v1`）のエラーは以下の形式で返ります。互換APIの形式は、[chunirec互換API](/api/compat-chunirec/#エラーレスポンス)・[reiwa互換API](/api/compat-reiwa/#エラーレスポンス)を参照してください。
 
 ```json
 {
   "error": {
     "status": 401,
-    "code": "invalid_token",
-    "message": "トークンが無効です。"
+    "code": "invalid_token"
   }
 }
 ```
@@ -90,7 +95,12 @@ APIトークンはChuniSupportの設定画面から発行できます。トー�
 | ---------- | -- | ---- |
 | `error.status` | number | HTTPステータスコード |
 | `error.code` | string | エラーコード（スネークケース） |
-| `error.message` | string | エラーの説明 |
+| `error.message` | string | 任意項目。`validation_failed` の場合に入力形式の説明を返します |
+| `error.details` | array | 任意項目。入力検証で得られた項目別の詳細 |
+| `error.details[].field` | string | 検証に失敗した項目名 |
+| `error.details[].message` | string | 項目の入力形式に関する説明 |
+
+`message` と `details` は省略される場合があります。エラーの判定にはHTTPステータスと `error.code` を使用してください。
 
 ### 主なエラーコード
 
@@ -109,6 +119,8 @@ APIトークンはChuniSupportの設定画面から発行できます。トー�
 | `validation_failed` | 400 / 422 | リクエストパラメータが不正です。未指定などは400、形式・値の検証エラーは422になります |
 | `score_history_not_found` | 404 | スコア履歴が存在しません（未プレイ） |
 | `player_metric_history_not_found` | 404 | プレイヤーの公式指標履歴が存在しません |
+| `bad_request` | 400 | JSONの解析失敗や未対応のフィールドなど、リクエストの形式が不正です |
+| `maintenance_mode` | 503 | メンテナンス中のため利用できません |
 | `internal_error` | 500 | サーバー内部エラー |
 
 <ApiLegacyAnchorRedirect />
