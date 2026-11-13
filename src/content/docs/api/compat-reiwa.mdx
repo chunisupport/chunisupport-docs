@@ -11,6 +11,12 @@ import { Aside } from '@astrojs/starlight/components'
 
 reiwa互換APIは外部ツールとの互換性を持つエンドポイントです。CHUNITHMのバージョン、楽曲・譜面データを取得できます。APIトークン認証を使用します。
 
+## エラーレスポンス
+
+[chunirec互換APIのエラーレスポンス](/api/compat-chunirec/#エラーレスポンス)と同じ形式です。`error.code` は数値で、APIトークン未指定・無効、入力検証エラー、メンテナンス中、サーバー内部エラーなどは `503 service unavailable.` を返します。
+
+[レート制限](/api/#レートリミット)と[メンテナンス中の利用](/api/#メンテナンス中の利用)も共通です。メンテナンス遮断時は、本文に文字列の `maintenance_mode` を含めず、`Retry-After: 60` と `Cache-Control: no-store` ヘッダーを付けます。
+
 ## GET `/compat/reiwa/1/chunirec_all.json`
 
 通常楽曲とWORLD'S END楽曲を楽曲単位の配列で返します。削除済み楽曲は除外します。
@@ -200,7 +206,7 @@ Authorization: Bearer <APIトークン>
 | `diff` | string | 難易度（`BAS`、`ADV`、`EXP`、`MAS`、`ULT`） |
 | `notes` | number | ノーツ数 |
 | `unknown` | number | 譜面定数不明フラグ（0: 既知、1: 不明） |
-| `chunirec_id` | string | 楽曲の内部ID |
+| `chunirec_id` | string | ChuniSupportの楽曲識別子。chunirecの楽曲IDとは異なります |
 | `idx` | string | 公式インデックス |
 | `bpm` | number | BPM |
 | `release` | number | リリース日のJST 0時Unixタイムスタンプ ÷ 100 |

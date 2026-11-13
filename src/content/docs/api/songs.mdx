@@ -128,7 +128,7 @@ Authorization: Bearer <APIトークン>
 | `songs[].maxop` | number | 全譜面のうち最も定数が高い譜面で理論値を取ったときのOVER POWER値 |
 | `songs[].is_maxop_unknown` | boolean | `maxop` が暫定値である可能性がある場合に `true` |
 | `songs[].op_target_difficulty` | string \| null | `maxop` の算出対象となった譜面の難易度 |
-| `songs[].is_new` | boolean | 新曲枠の対象楽曲の場合に `true` |
+| `songs[].is_new` | boolean | 最新の2週間ごとの更新で追加された楽曲の場合に `true`。レーティング新曲枠の対象かどうかを表す値ではありません |
 | `songs[].charts` | object | 譜面情報のマップ。キーは `BASIC`、`ADVANCED`、`EXPERT`、`MASTER`、`ULTIMA` の順 |
 | `songs[].charts[key].const` | number | 譜面定数 |
 | `songs[].charts[key].is_const_unknown` | boolean | 譜面定数が未確定の場合 `true` |
@@ -136,6 +136,8 @@ Authorization: Bearer <APIトークン>
 | `songs[].charts[key].notes_designer` | string \| null | ノーツデザイナー |
 
 譜面が存在しない難易度は `null` になります。
+
+レーティング新曲枠は現行バージョン開始日以降にリリースされた楽曲から判定します。`is_new` はこの判定に使用しません。
 
 ---
 
@@ -186,6 +188,7 @@ Content-Type: application/json
 | `[].bpm` | number \| null | | BPM |
 | `[].released_at` | string \| null | | リリース日（`YYYY-MM-DD` 形式） |
 | `[].jacket` | string \| null | | ジャケット画像ファイル名 |
+| `[].is_new` | boolean \| null | | 最新の2週間ごとの更新で追加された楽曲かどうか。省略または `null` の場合は既存値を維持します |
 | `[].charts` | object | | 譜面情報のマップ。キーは `BASIC`、`ADVANCED`、`EXPERT`、`MASTER`、`ULTIMA` |
 | `[].charts[key].const` | number | ✓ | 譜面定数 |
 | `[].charts[key].is_const_unknown` | boolean | ✓ | 譜面定数が未確定の場合 `true` |
@@ -198,6 +201,7 @@ Content-Type: application/json
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
+| `bad_request` | 400 | JSONの形式が不正、または未対応のフィールドが含まれています |
 | `validation_failed` | 422 | リクエストパラメータが不正です |
 | `forbidden` | 403 | `read_write` トークン、または EDITOR / ADMIN 権限が必要です |
 

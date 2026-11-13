@@ -1,12 +1,12 @@
 ---
 title: コース
-description: コース一覧・詳細・コース記録のAPI。
+description: コース一覧・詳細・コース記録、およびコースの作成・更新API。
 sidebar:
   label: コース
   order: 4
 ---
 
-コースの一覧・詳細と、プレイヤーのコース記録を取得するAPIです。
+コースの一覧・詳細と、プレイヤーのコース記録を取得するAPI、およびコースを作成・更新するAPIです。
 
 ## GET `/v1/courses`
 
@@ -80,6 +80,93 @@ Authorization: Bearer <APIトークン>
 | ------ | ---- | ---- |
 | `validation_failed` | 422 | `id` の形式が不正です |
 | `not_found` | 404 | 指定されたコースが見つかりません |
+
+---
+
+## POST `/v1/courses`
+
+新しいコースを作成します。コースの `id` はサーバーが発行します。
+
+**権限**: `read_write` トークン、および ADMIN
+
+**リクエスト**:
+
+```
+POST /v1/courses
+Authorization: Bearer <APIトークン>
+Content-Type: application/json
+```
+
+```json
+{
+  "idx": "50020",
+  "name": "クラス認定 Ⅲ",
+  "class": "3"
+}
+```
+
+| フィールド | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `idx` | string | ✓ | 公式ID（最大32文字）。既存コースと重複不可 |
+| `name` | string | ✓ | コース名（最大255文字） |
+| `class` | string | ✓ | コースクラス（`1`～`5`、`inf`、`extra`。最大16文字） |
+
+**レスポンス**: 201 Created
+
+作成したコースオブジェクトを返します。形式は [GET `/v1/courses/:id`](#get-v1coursesid) と同じです。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| --- | --- | --- |
+| `bad_request` | 400 | JSONの形式が不正、または未対応のフィールドが含まれています |
+| `forbidden` | 403 | `read_write` トークンと ADMIN 権限が必要です |
+| `duplicate_official_idx` | 409 | 公式IDが既存コースと重複しています |
+| `validation_failed` | 422 | 必須項目、文字数、コースクラスなどが不正です |
+
+---
+
+## PUT `/v1/courses/:id`
+
+既存コースの名称とクラスを更新します。公式ID（`idx`）は変更できません。
+
+**権限**: `read_write` トークン、および EDITOR または ADMIN
+
+**リクエスト**:
+
+```
+PUT /v1/courses/7d5f5c42b9a8e301
+Authorization: Bearer <APIトークン>
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "クラス認定 Ⅲ",
+  "class": "3"
+}
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| --- | --- | --- |
+| `id` | string | コースのID（16文字の小文字16進数） |
+
+`name` と `class` はどちらも必須です。値の制約は [POST `/v1/courses`](#post-v1courses) と同じです。
+
+**レスポンス**: 200 OK
+
+更新したコースオブジェクトを返します。形式は [GET `/v1/courses/:id`](#get-v1coursesid) と同じです。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| --- | --- | --- |
+| `bad_request` | 400 | JSONの形式が不正、または未対応のフィールドが含まれています |
+| `forbidden` | 403 | `read_write` トークンと EDITOR / ADMIN 権限が必要です |
+| `not_found` | 404 | 指定されたコースが見つかりません |
+| `validation_failed` | 422 | `id`、必須項目、文字数、コースクラスなどが不正です |
 
 ---
 
