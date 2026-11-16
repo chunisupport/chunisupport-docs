@@ -12,9 +12,6 @@
     "build": "astro check && astro build",
     "test": "node --experimental-strip-types --test src/lib/legacyAnchorRedirect.test.ts",
     "preview": "astro preview",
-    "preview:workers": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy",
-    "deploy:preview": "npm run build && wrangler preview",
     "astro": "astro"
   },
   "dependencies": {
@@ -28,7 +25,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "typescript": "^6.0.3",
-    "wrangler": "^4.162.0"
+    "typescript": "^6.0.3"
   }
 }
