@@ -151,6 +151,7 @@ Authorization: Bearer <APIトークン>
     "class_emblem": "inf",
     "class_emblem_base": null,
     "possession_id": 5,
+    "possession": "rainbow",
     "last_played_at": "2026-06-20T22:28:00+09:00",
     "overpower_value": 103759.74,
     "overpower_percent": 76.4308,
@@ -338,6 +339,7 @@ Authorization: Bearer <APIトークン>
 | `class_emblem` | string \| null | `class_emblem_id` に対応するマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
 | `class_emblem_base` | string \| null | `class_emblem_base_id` に対応するマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
 | `possession_id` | number | ポゼッションID（1: normal、2: silver、3: gold、4: platina、5: rainbow） |
+| `possession` | string | ポゼッション名（`normal`、`silver`、`gold`、`platina`、`rainbow`）。`possession_id` に対応します |
 | `last_played_at` | string \| null | 最終プレイ日時（ISO8601） |
 | `overpower_value` | number \| null | 保存済みスコアから計算したOVER POWER値 |
 | `overpower_percent` | number \| null | 現在の楽曲マスタと未解禁設定から計算したOVER POWER達成割合（%） |
