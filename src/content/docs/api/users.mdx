@@ -124,10 +124,6 @@ Authorization: Bearer <APIトークン>
 
 `records` には、未プレイの通常譜面・WORLD'S END譜面・コースも常に補完して返します。補完されたレコードは `is_played` が `false`、`updated_at` が `null` になります。追加のクエリパラメータは不要です。
 
-:::caution[フィールドの変更]
-`player.class_emblem_id` / `player.class_emblem_base_id` / `player.possession_id` は廃止しました。数値IDの代わりに、`player.class_emblem` / `player.class_emblem_base` / `player.possession` の名称を参照してください。
-:::
-
 **リクエスト**:
 
 ```
@@ -150,8 +146,11 @@ Authorization: Bearer <APIトークン>
     "name": "０ｘＦＦ３１",
     "level": 245,
     "rating": 17.4632,
+    "class_emblem_id": 6,
+    "class_emblem_base_id": null,
     "class_emblem": "inf",
     "class_emblem_base": null,
+    "possession_id": 5,
     "possession": "rainbow",
     "last_played_at": "2026-06-20T22:28:00+09:00",
     "overpower_value": 103759.74,
@@ -335,9 +334,12 @@ Authorization: Bearer <APIトークン>
 | `name` | string | プレイヤー名 |
 | `level` | number | プレイヤーレベル |
 | `rating` | number | 保存済みスコアから算出したレーティング |
-| `class_emblem` | string \| null | クラスエンブレムのマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
-| `class_emblem_base` | string \| null | クラスエンブレムベースのマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
-| `possession` | string | ポゼッション名（`normal`、`silver`、`gold`、`platina`、`rainbow`） |
+| `class_emblem_id` | number \| null | クラスエンブレムのマスタID。未設定時は `null` |
+| `class_emblem_base_id` | number \| null | クラスエンブレムベースのマスタID。未設定時は `null` |
+| `class_emblem` | string \| null | `class_emblem_id` に対応するマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
+| `class_emblem_base` | string \| null | `class_emblem_base_id` に対応するマスタ名（`1`、`2`、`3`、`4`、`5`、`inf`）。未設定または解決できない場合は `null` |
+| `possession_id` | number | ポゼッションID（1: normal、2: silver、3: gold、4: platina、5: rainbow） |
+| `possession` | string | ポゼッション名（`normal`、`silver`、`gold`、`platina`、`rainbow`）。`possession_id` に対応します |
 | `last_played_at` | string \| null | 最終プレイ日時（ISO8601） |
 | `overpower_value` | number \| null | 保存済みスコアから計算したOVER POWER値 |
 | `overpower_percent` | number \| null | 現在の楽曲マスタと未解禁設定から計算したOVER POWER達成割合（%） |
