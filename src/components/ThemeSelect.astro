@@ -1,75 +1,530 @@
 ---
 /*
- * Starlight の ThemeSelect をオーバーライドし、フロント由来の
- * 5 テーマ（light/dark/black/dark-blue/pastel-orange）と
- * 6 アクセント（green/orange/blue/violet/yellow/red）を選択できるようにする。
+ * Starlight の ThemeSelect をオーバーライドし、ChuniSupport 本体の外観設定と同じ
+ * 5 テーマ（ホワイト / パステルオレンジ / ダークグリーン / ダークブルー / ブラック）と
+ * 7 アクセント（レッド / オレンジ / イエロー / グリーン / スカイブルー / ブルー / バイオレット）を
+ * スウォッチ付き UI で切り替えられるようにする。
  *
- * 実際の適用ロジックは ThemeProvider.astro の window.CsDocsTheme に集約している。
+ * inline=true を渡すと、モバイルメニュー内などに向けてポップオーバーなしで展開表示する。
  */
-import Select from '@astrojs/starlight/components/Select.astro';
+interface Props {
+	inline?: boolean;
+}
+
+const { inline = false } = Astro.props;
+
+const THEME_OPTIONS = [
+	{ value: 'light', label: 'ホワイト', bg: '#ffffff', surface: '#f3f4f6', border: '#d1d5db' },
+	{
+		value: 'pastel-orange',
+		label: 'パステルオレンジ',
+		bg: '#fcf0e0',
+		surface: '#fef6eb',
+		border: '#ecc09f',
+	},
+	{ value: 'dark', label: 'ダークグリーン', bg: '#03150f', surface: '#082018', border: '#2f6b53' },
+	{ value: 'dark-blue', label: 'ダークブルー', bg: '#0a0e1a', surface: '#0f1526', border: '#2f4480' },
+	{ value: 'black', label: 'ブラック', bg: '#111111', surface: '#181818', border: '#555555' },
+] as const;
+
+const ACCENT_OPTIONS = [
+	{ value: 'red', label: 'レッド', color: '#ef4444' },
+	{ value: 'orange', label: 'オレンジ', color: '#f97316' },
+	{ value: 'yellow', label: 'イエロー', color: '#eab308' },
+	{ value: 'green', label: 'グリーン', color: '#22c55e' },
+	{ value: 'sky-blue', label: 'スカイブルー', color: '#0ea5e9' },
+	{ value: 'blue', label: 'ブルー', color: '#3b82f6' },
+	{ value: 'violet', label: 'バイオレット', color: '#8b5cf6' },
+] as const;
 ---
 
-<starlight-cs-theme-select class="cs-theme-controls">
-	<Select
-		icon="laptop"
-		label="配色テーマ"
-		options={[
-			{ label: 'ライト', selected: false, value: 'light' },
-			{ label: 'ダーク', selected: true, value: 'dark' },
-			{ label: 'ブラック', selected: false, value: 'black' },
-			{ label: 'ダークブルー', selected: false, value: 'dark-blue' },
-			{ label: 'パステルオレンジ', selected: false, value: 'pastel-orange' },
-		]}
-		width="9.5em"
-	/>
-	<Select
-		icon="pen"
-		label="アクセントカラー"
-		options={[
-			{ label: 'グリーン', selected: true, value: 'green' },
-			{ label: 'オレンジ', selected: false, value: 'orange' },
-			{ label: 'ブルー', selected: false, value: 'blue' },
-			{ label: 'バイオレット', selected: false, value: 'violet' },
-			{ label: 'イエロー', selected: false, value: 'yellow' },
-			{ label: 'レッド', selected: false, value: 'red' },
-		]}
-		width="7.5em"
-	/>
+<starlight-cs-theme-select class:list={['cs-appearance', { 'cs-appearance--inline': inline }]}>
+	{
+		!inline && (
+			<button
+				type="button"
+				class="cs-appearance__trigger"
+				data-appearance-trigger
+				aria-haspopup="dialog"
+				aria-expanded="false"
+				aria-label="外観設定を開く"
+				title="外観"
+			>
+				{/* Lucide Palette 互換アイコン */}
+				<svg
+					class="cs-appearance__icon"
+					viewBox="0 0 24 24"
+					width="18"
+					height="18"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+					<circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+					<circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+					<circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+					<path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+				</svg>
+				<span class="cs-appearance__label">外観</span>
+				<span class="cs-appearance__dot" aria-hidden="true" />
+			</button>
+		)
+	}
+
+	<div
+		class:list={['cs-appearance__panel', { 'cs-appearance__panel--popover': !inline }]}
+		data-appearance-panel
+		role={inline ? undefined : 'dialog'}
+		aria-label="外観設定"
+		hidden={!inline}
+	>
+		<div class="cs-appearance__section">
+			<div class="cs-appearance__section-head">
+				<span class="cs-appearance__section-title">背景</span>
+				<span class="cs-appearance__current-label" data-current-theme-label></span>
+			</div>
+			<div class="cs-appearance__theme-grid" role="radiogroup" aria-label="背景テーマ">
+				{
+					THEME_OPTIONS.map((opt) => (
+						<button
+							type="button"
+							role="radio"
+							aria-checked="false"
+							class="cs-appearance__theme-btn"
+							data-theme-option={opt.value}
+							data-option-label={opt.label}
+						>
+							<span
+								class="cs-appearance__theme-swatch"
+								style={`--swatch-bg: ${opt.bg}; --swatch-surface: ${opt.surface}; --swatch-border: ${opt.border};`}
+								aria-hidden="true"
+							/>
+							<span class="cs-appearance__theme-name">{opt.label}</span>
+						</button>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="cs-appearance__divider" aria-hidden="true" />
+
+		<div class="cs-appearance__section">
+			<div class="cs-appearance__section-head">
+				<span class="cs-appearance__section-title">アクセント</span>
+				<span class="cs-appearance__current-label" data-current-accent-label></span>
+			</div>
+			<div class="cs-appearance__accent-row" role="radiogroup" aria-label="アクセントカラー">
+				{
+					ACCENT_OPTIONS.map((opt) => (
+						<button
+							type="button"
+							role="radio"
+							aria-checked="false"
+							aria-label={opt.label}
+							title={opt.label}
+							class="cs-appearance__accent-btn"
+							data-accent-option={opt.value}
+							data-option-label={opt.label}
+							style={`--accent-swatch: ${opt.color};`}
+						>
+							<svg
+								class="cs-appearance__check"
+								viewBox="0 0 24 24"
+								width="14"
+								height="14"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="3"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M20 6 9 17l-5-5" />
+							</svg>
+						</button>
+					))
+				}
+			</div>
+		</div>
+	</div>
 </starlight-cs-theme-select>
 
 <style>
-	.cs-theme-controls {
-		display: flex;
-		gap: 0.75rem;
+	.cs-appearance {
+		position: relative;
+		display: inline-flex;
 		align-items: center;
-		flex-wrap: wrap;
+	}
+
+	.cs-appearance--inline {
+		display: block;
+		width: 100%;
+	}
+
+	.cs-appearance__trigger {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		height: 2.25rem;
+		padding: 0 0.625rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-surface);
+		color: var(--cs-color-nav-text);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+
+	.cs-appearance__trigger:hover {
+		background-color: var(--cs-color-surface-hover);
+		border-color: var(--cs-color-border-strong);
+		color: var(--cs-color-text);
+	}
+
+	.cs-appearance__trigger[aria-expanded='true'] {
+		background-color: var(--cs-color-action-primary-muted);
+		border-color: var(--cs-color-action-primary);
+		color: var(--cs-color-link);
+	}
+
+	.cs-appearance__icon {
+		flex-shrink: 0;
+	}
+
+	.cs-appearance__label {
+		display: none;
+	}
+
+	@media (min-width: 64rem) {
+		.cs-appearance__label {
+			display: inline;
+		}
+	}
+
+	.cs-appearance__dot {
+		width: 0.5625rem;
+		height: 0.5625rem;
+		border-radius: 9999px;
+		background-color: var(--cs-color-action-primary);
+		box-shadow: 0 0 0 1px color-mix(in oklab, var(--cs-color-text) 20%, transparent);
+		flex-shrink: 0;
+	}
+
+	.cs-appearance__panel {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.cs-appearance__panel[hidden] {
+		display: none;
+	}
+
+	.cs-appearance__panel--popover {
+		position: absolute;
+		top: calc(100% + 0.5rem);
+		inset-inline-end: 0;
+		z-index: 50;
+		width: min(18.5rem, calc(100vw - 1.5rem));
+		padding: 0.875rem;
+		border: 1px solid var(--cs-color-border-strong);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface);
+		box-shadow:
+			0 10px 25px -5px rgb(0 0 0 / 22%),
+			0 4px 10px -4px rgb(0 0 0 / 15%);
+	}
+
+	.cs-appearance__section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.cs-appearance__section-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.cs-appearance__section-title {
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		color: var(--cs-color-text-muted);
+	}
+
+	.cs-appearance__current-label {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--cs-color-text);
+	}
+
+	.cs-appearance__divider {
+		height: 1px;
+		background-color: var(--cs-color-border);
+	}
+
+	.cs-appearance__theme-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.375rem;
+	}
+
+	.cs-appearance__theme-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		width: 100%;
+		padding: 0.4375rem 0.625rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-surface);
+		color: var(--cs-color-text);
+		font-size: 0.8125rem;
+		font-weight: 500;
+		text-align: start;
+		cursor: pointer;
+		transition:
+			background-color 140ms ease,
+			border-color 140ms ease,
+			color 140ms ease;
+	}
+
+	.cs-appearance__theme-btn:hover {
+		background-color: var(--cs-color-surface-muted);
+		border-color: var(--cs-color-border-strong);
+	}
+
+	.cs-appearance__theme-btn[aria-checked='true'] {
+		border-color: var(--cs-color-action-primary);
+		background-color: var(--cs-color-action-primary-muted);
+		color: var(--cs-color-link);
+		font-weight: 700;
+	}
+
+	.cs-appearance__theme-swatch {
+		position: relative;
+		width: 1.125rem;
+		height: 1.125rem;
+		border-radius: 0.25rem;
+		border: 1px solid var(--swatch-border);
+		background: linear-gradient(135deg, var(--swatch-bg) 50%, var(--swatch-surface) 50%);
+		flex-shrink: 0;
+	}
+
+	.cs-appearance__theme-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.cs-appearance__accent-row {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: 0.375rem;
+	}
+
+	.cs-appearance__accent-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: 1;
+		width: 100%;
+		padding: 0;
+		border: 2px solid transparent;
+		border-radius: 9999px;
+		background-color: var(--accent-swatch);
+		color: #ffffff;
+		cursor: pointer;
+		box-shadow: inset 0 0 0 1px rgb(0 0 0 / 18%);
+		transition:
+			transform 140ms ease,
+			box-shadow 140ms ease;
+	}
+
+	.cs-appearance__accent-btn[data-accent-option='yellow'] {
+		color: #111827;
+	}
+
+	.cs-appearance__accent-btn:hover {
+		transform: scale(1.08);
+	}
+
+	.cs-appearance__accent-btn[aria-checked='true'] {
+		box-shadow:
+			0 0 0 2px var(--cs-color-surface),
+			0 0 0 4px var(--accent-swatch);
+	}
+
+	.cs-appearance__check {
+		opacity: 0;
+		transform: scale(0.75);
+		transition:
+			opacity 140ms ease,
+			transform 140ms ease;
+	}
+
+	.cs-appearance__accent-btn[aria-checked='true'] .cs-appearance__check {
+		opacity: 1;
+		transform: scale(1);
 	}
 </style>
 
 <script>
+	interface CsDocsThemeApi {
+		getTheme?: () => string;
+		getAccent?: () => string;
+		loadTheme: () => string;
+		loadAccent: () => string;
+		setTheme: (theme: string) => void;
+		setAccent: (accent: string) => void;
+	}
+
 	class StarlightCsThemeSelect extends HTMLElement {
-		constructor() {
-			super();
-			const api = (window as any).CsDocsTheme;
+		private handleDocumentClick?: (e: MouseEvent) => void;
+		private handleKeyDown?: (e: KeyboardEvent) => void;
+		private handleThemeChange?: () => void;
+
+		connectedCallback() {
+			const api = (window as Window & { CsDocsTheme?: CsDocsThemeApi }).CsDocsTheme;
 			if (!api) return;
 
-			const selects = this.querySelectorAll('select');
-			const themeSelect = selects[0] as HTMLSelectElement | undefined;
-			const accentSelect = selects[1] as HTMLSelectElement | undefined;
+			const trigger = this.querySelector<HTMLButtonElement>('[data-appearance-trigger]');
+			const panel = this.querySelector<HTMLElement>('[data-appearance-panel]');
+			const themeButtons = Array.from(
+				this.querySelectorAll<HTMLButtonElement>('[data-theme-option]')
+			);
+			const accentButtons = Array.from(
+				this.querySelectorAll<HTMLButtonElement>('[data-accent-option]')
+			);
+			const themeLabelEl = this.querySelector<HTMLElement>('[data-current-theme-label]');
+			const accentLabelEl = this.querySelector<HTMLElement>('[data-current-accent-label]');
 
-			// 現在値を UI に反映
-			if (themeSelect) themeSelect.value = api.loadTheme();
-			if (accentSelect) accentSelect.value = api.loadAccent();
+			const updateRadioGroup = (
+				buttons: HTMLButtonElement[],
+				activeValue: string,
+				optionKey: 'themeOption' | 'accentOption',
+				labelEl: HTMLElement | null
+			) => {
+				let matched = false;
+				for (const btn of buttons) {
+					const active = btn.dataset[optionKey] === activeValue;
+					if (active) matched = true;
+					btn.setAttribute('aria-checked', String(active));
+					btn.tabIndex = active ? 0 : -1;
+					if (active && labelEl) {
+						labelEl.textContent = btn.dataset.optionLabel ?? activeValue;
+					}
+				}
+				if (!matched && buttons[0]) {
+					buttons[0].tabIndex = 0;
+				}
+			};
 
-			themeSelect?.addEventListener('change', (e) => {
-				const target = e.currentTarget;
-				if (target instanceof HTMLSelectElement) api.setTheme(target.value);
+			const syncState = () => {
+				const currentTheme = api.getTheme ? api.getTheme() : api.loadTheme();
+				const currentAccent = api.getAccent ? api.getAccent() : api.loadAccent();
+
+				updateRadioGroup(themeButtons, currentTheme, 'themeOption', themeLabelEl);
+				updateRadioGroup(accentButtons, currentAccent, 'accentOption', accentLabelEl);
+			};
+
+			const bindRadioGroup = (
+				buttons: HTMLButtonElement[],
+				optionKey: 'themeOption' | 'accentOption',
+				onSelect: (value: string) => void
+			) => {
+				for (const [index, btn] of buttons.entries()) {
+					btn.addEventListener('click', () => {
+						const value = btn.dataset[optionKey];
+						if (value) onSelect(value);
+					});
+
+					btn.addEventListener('keydown', (e) => {
+						let nextIndex: number | null = null;
+						if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+							nextIndex = (index + 1) % buttons.length;
+						} else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+							nextIndex = (index - 1 + buttons.length) % buttons.length;
+						} else if (e.key === 'Home') {
+							nextIndex = 0;
+						} else if (e.key === 'End') {
+							nextIndex = buttons.length - 1;
+						}
+						if (nextIndex === null) return;
+
+						e.preventDefault();
+						const target = buttons[nextIndex];
+						const value = target?.dataset[optionKey];
+						if (value) onSelect(value);
+						target?.focus();
+					});
+				}
+			};
+
+			const setOpen = (open: boolean) => {
+				if (!trigger || !panel) return;
+				panel.hidden = !open;
+				trigger.setAttribute('aria-expanded', String(open));
+			};
+
+			syncState();
+
+			trigger?.addEventListener('click', () => {
+				const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+				setOpen(!isOpen);
 			});
-			accentSelect?.addEventListener('change', (e) => {
-				const target = e.currentTarget;
-				if (target instanceof HTMLSelectElement) api.setAccent(target.value);
-			});
+
+			bindRadioGroup(themeButtons, 'themeOption', (value) => api.setTheme(value));
+			bindRadioGroup(accentButtons, 'accentOption', (value) => api.setAccent(value));
+
+			if (trigger && panel) {
+				this.handleDocumentClick = (e: MouseEvent) => {
+					if (!this.contains(e.target as Node)) {
+						setOpen(false);
+					}
+				};
+				this.handleKeyDown = (e: KeyboardEvent) => {
+					if (e.key === 'Escape' && !panel.hidden) {
+						setOpen(false);
+						trigger.focus();
+					}
+				};
+				document.addEventListener('click', this.handleDocumentClick);
+				document.addEventListener('keydown', this.handleKeyDown);
+			}
+
+			this.handleThemeChange = () => syncState();
+			window.addEventListener('cs-theme-change', this.handleThemeChange);
+		}
+
+		disconnectedCallback() {
+			if (this.handleDocumentClick) {
+				document.removeEventListener('click', this.handleDocumentClick);
+			}
+			if (this.handleKeyDown) {
+				document.removeEventListener('keydown', this.handleKeyDown);
+			}
+			if (this.handleThemeChange) {
+				window.removeEventListener('cs-theme-change', this.handleThemeChange);
+			}
 		}
 	}
-	customElements.define('starlight-cs-theme-select', StarlightCsThemeSelect);
+
+	if (!customElements.get('starlight-cs-theme-select')) {
+		customElements.define('starlight-cs-theme-select', StarlightCsThemeSelect);
+	}
 </script>

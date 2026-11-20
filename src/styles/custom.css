@@ -1,351 +1,1522 @@
 /*
- * ChuniSupport 本体（chunisupport-front）の tailwind.css で使用しているカラーテーマを
- * Astro Starlight 用に移植したもの。
+ * ChuniSupport ガイド デザインシステム
  *
- * - 他ディレクトリを参照せず、このファイル単体で完結させるため
- *   Tailwind パレット（*-50〜*-900）とフロントの独自サーフェス色を直接ハードコードしている。
- * - テーマ（data-cs-theme）とアクセント（data-accent）の切替 UI は
- *   src/components/ThemeSelect.astro / AccentSelect.astro で提供する。
- *   Starlight 標準の light/dark 基盤（data-theme）は維持したまま、
- *   data-cs-theme で具体的な配色を上書きする 2 層構成。
+ * ChuniSupport 本体（chunisupport-front/src/styles/tailwind.css）のカラーシステム、
+ * 市松模様背景、サーフェス階層、タイポグラフィ、UI トーンを Astro Starlight 向けに再設計。
  *
- * ── 設計方針 ─────────────────────────────────────────────
- * Starlight は --sl-color-{white,gray-1..6,black,accent*} の 3 系統からサイト全体の
- * 配色を導出する。フロントの --cs-color-* トークンを次の対応で流し込む:
- *   --sl-color-white  … 見出し/最も明るいテキスト (cs-text 相当)
- *   --sl-color-gray-2 … 本文テキスト (cs-text-muted)
- *   --sl-color-gray-3 … 補助テキスト (cs-text-subtle)
- *   --sl-color-gray-5 … 枠線 (cs-border)
- *   --sl-color-gray-6 … ナビ/サイドバー背景 (cs-surface)
- *   --sl-color-black  … ページ背景 (cs-bg)
- *   --sl-color-accent{,-low,-high} … アクセント (data-accent 由来)
+ * - 他リポジトリを参照せず単体で完結させるため、パレットとテーマトークンを自己完結定義している。
+ * - DOM には 3 属性を付与する（src/components/ThemeProvider.astro）:
+ *     data-theme     … 'light' | 'dark'（Starlight / Expressive Code の基盤配色）
+ *     data-cs-theme  … 'light' | 'pastel-orange' | 'dark' | 'dark-blue' | 'black'
+ *     data-accent    … 'red' | 'orange' | 'yellow' | 'green' | 'sky-blue' | 'blue' | 'violet'
  */
 
 /* =========================================================================
- * Tailwind パレット（フロントが依存する色相のみ抜粋）
- * data-accent で参照するため CSS 変数として定義しておく。
+ * 1. ベースパレット（Tailwind v4 カラーパレットよりフロント使用色相を抜粋）
  * ========================================================================= */
 :root {
-  --color-white: #ffffff;
+	--color-white: #ffffff;
 
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+	--color-gray-50: #f9fafb;
+	--color-gray-100: #f3f4f6;
+	--color-gray-200: #e5e7eb;
+	--color-gray-300: #d1d5db;
+	--color-gray-400: #9ca3af;
+	--color-gray-500: #6b7280;
+	--color-gray-600: #4b5563;
+	--color-gray-700: #374151;
+	--color-gray-800: #1f2937;
+	--color-gray-900: #111827;
 
-  --color-green-50: #f0fdf4;
-  --color-green-100: #dcfce7;
-  --color-green-200: #bbf7d0;
-  --color-green-300: #86efac;
-  --color-green-400: #4ade80;
-  --color-green-500: #22c55e;
-  --color-green-600: #16a34a;
-  --color-green-700: #15803d;
-  --color-green-800: #166534;
-  --color-green-900: #14532d;
+	--color-green-50: #f0fdf4;
+	--color-green-100: #dcfce7;
+	--color-green-200: #bbf7d0;
+	--color-green-300: #86efac;
+	--color-green-400: #4ade80;
+	--color-green-500: #22c55e;
+	--color-green-600: #16a34a;
+	--color-green-700: #15803d;
+	--color-green-800: #166534;
+	--color-green-900: #14532d;
 
-  --color-orange-50: #fff7ed;
-  --color-orange-100: #ffedd5;
-  --color-orange-200: #fed7aa;
-  --color-orange-300: #fdba74;
-  --color-orange-400: #fb923c;
-  --color-orange-500: #f97316;
-  --color-orange-600: #ea580c;
-  --color-orange-700: #c2410c;
-  --color-orange-800: #9a3412;
-  --color-orange-900: #7c2d12;
+	--color-teal-300: #5eead4;
+	--color-teal-800: #115e59;
+	--color-teal-900: #134e4a;
 
-  --color-blue-50: #eff6ff;
-  --color-blue-100: #dbeafe;
-  --color-blue-200: #bfdbfe;
-  --color-blue-300: #93c5fd;
-  --color-blue-400: #60a5fa;
-  --color-blue-500: #3b82f6;
-  --color-blue-600: #2563eb;
-  --color-blue-700: #1d4ed8;
-  --color-blue-800: #1e40af;
-  --color-blue-900: #1e3a8a;
+	--color-orange-50: #fff7ed;
+	--color-orange-100: #ffedd5;
+	--color-orange-200: #fed7aa;
+	--color-orange-300: #fdba74;
+	--color-orange-400: #fb923c;
+	--color-orange-500: #f97316;
+	--color-orange-600: #ea580c;
+	--color-orange-700: #c2410c;
+	--color-orange-800: #9a3412;
+	--color-orange-900: #7c2d12;
 
-  --color-violet-50: #f5f3ff;
-  --color-violet-100: #ede9fe;
-  --color-violet-200: #ddd6fe;
-  --color-violet-300: #c4b5fd;
-  --color-violet-400: #a78bfa;
-  --color-violet-500: #8b5cf6;
-  --color-violet-600: #7c3aed;
-  --color-violet-700: #6d28d9;
-  --color-violet-800: #5b21b6;
-  --color-violet-900: #4c1d95;
+	--color-sky-50: #f0f9ff;
+	--color-sky-100: #e0f2fe;
+	--color-sky-200: #bae6fd;
+	--color-sky-300: #7dd3fc;
+	--color-sky-400: #38bdf8;
+	--color-sky-500: #0ea5e9;
+	--color-sky-600: #0284c7;
+	--color-sky-700: #0369a1;
+	--color-sky-800: #075985;
+	--color-sky-900: #0c4a6e;
 
-  --color-yellow-50: #fefce8;
-  --color-yellow-100: #fef9c3;
-  --color-yellow-200: #fef08a;
-  --color-yellow-300: #fde047;
-  --color-yellow-400: #facc15;
-  --color-yellow-500: #eab308;
-  --color-yellow-600: #ca8a04;
-  --color-yellow-700: #a16207;
-  --color-yellow-800: #854d0e;
-  --color-yellow-900: #713f12;
+	--color-blue-50: #eff6ff;
+	--color-blue-100: #dbeafe;
+	--color-blue-200: #bfdbfe;
+	--color-blue-300: #93c5fd;
+	--color-blue-400: #60a5fa;
+	--color-blue-500: #3b82f6;
+	--color-blue-600: #2563eb;
+	--color-blue-700: #1d4ed8;
+	--color-blue-800: #1e40af;
+	--color-blue-900: #1e3a8a;
 
-  --color-red-50: #fef2f2;
-  --color-red-100: #fee2e2;
-  --color-red-200: #fecaca;
-  --color-red-300: #fca5a5;
-  --color-red-400: #f87171;
-  --color-red-500: #ef4444;
-  --color-red-600: #dc2626;
-  --color-red-700: #b91c1c;
-  --color-red-800: #991b1b;
-  --color-red-900: #7f1d1d;
+	--color-violet-50: #f5f3ff;
+	--color-violet-100: #ede9fe;
+	--color-violet-200: #ddd6fe;
+	--color-violet-300: #c4b5fd;
+	--color-violet-400: #a78bfa;
+	--color-violet-500: #8b5cf6;
+	--color-violet-600: #7c3aed;
+	--color-violet-700: #6d28d9;
+	--color-violet-800: #5b21b6;
+	--color-violet-900: #4c1d95;
+
+	--color-yellow-50: #fefce8;
+	--color-yellow-100: #fef9c3;
+	--color-yellow-200: #fef08a;
+	--color-yellow-300: #fde047;
+	--color-yellow-400: #facc15;
+	--color-yellow-500: #eab308;
+	--color-yellow-600: #ca8a04;
+	--color-yellow-700: #a16207;
+	--color-yellow-800: #854d0e;
+	--color-yellow-900: #713f12;
+
+	--color-red-50: #fef2f2;
+	--color-red-100: #fee2e2;
+	--color-red-200: #fecaca;
+	--color-red-300: #fca5a5;
+	--color-red-400: #f87171;
+	--color-red-500: #ef4444;
+	--color-red-600: #dc2626;
+	--color-red-700: #b91c1c;
+	--color-red-800: #991b1b;
+	--color-red-900: #7f1d1d;
+
+	/* フォント定義（フロントの --font-sans / --font-jost 構成に揃える） */
+	--cs-font-sans: 'Noto Sans JP', 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
+	--cs-font-display: 'Jost', 'Noto Sans', 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+	--cs-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+	--sl-font: var(--cs-font-sans);
+	--sl-font-mono: var(--cs-font-mono);
+	--sl-content-width: 50rem;
+	--sl-nav-height: 3.75rem;
+	--sl-sidebar-width: 17.5rem;
 }
 
 /* =========================================================================
- * アクセントカラー（data-accent）
- * フロントの --cs-color-accent-* → Tailwind パレットへの接続を再現する。
- * 既定は green。
+ * 2. アクセントカラー（data-accent：全 7 色、既定は green）
  * ========================================================================= */
 :root,
 [data-accent='green'] {
-  --cs-color-accent-50: var(--color-green-50);
-  --cs-color-accent-100: var(--color-green-100);
-  --cs-color-accent-200: var(--color-green-200);
-  --cs-color-accent-300: var(--color-green-300);
-  --cs-color-accent-400: var(--color-green-400);
-  --cs-color-accent-500: var(--color-green-500);
-  --cs-color-accent-600: var(--color-green-600);
-  --cs-color-accent-700: var(--color-green-700);
-  --cs-color-accent-800: var(--color-green-800);
-  --cs-color-accent-900: var(--color-green-900);
+	--cs-color-accent-50: var(--color-green-50);
+	--cs-color-accent-100: var(--color-green-100);
+	--cs-color-accent-200: var(--color-green-200);
+	--cs-color-accent-300: var(--color-green-300);
+	--cs-color-accent-400: var(--color-green-400);
+	--cs-color-accent-500: var(--color-green-500);
+	--cs-color-accent-600: var(--color-green-600);
+	--cs-color-accent-700: var(--color-green-700);
+	--cs-color-accent-800: var(--color-green-800);
+	--cs-color-accent-900: var(--color-green-900);
 }
 
 [data-accent='orange'] {
-  --cs-color-accent-50: var(--color-orange-50);
-  --cs-color-accent-100: var(--color-orange-100);
-  --cs-color-accent-200: var(--color-orange-200);
-  --cs-color-accent-300: var(--color-orange-300);
-  --cs-color-accent-400: var(--color-orange-400);
-  --cs-color-accent-500: var(--color-orange-500);
-  --cs-color-accent-600: var(--color-orange-600);
-  --cs-color-accent-700: var(--color-orange-700);
-  --cs-color-accent-800: var(--color-orange-800);
-  --cs-color-accent-900: var(--color-orange-900);
+	--cs-color-accent-50: var(--color-orange-50);
+	--cs-color-accent-100: var(--color-orange-100);
+	--cs-color-accent-200: var(--color-orange-200);
+	--cs-color-accent-300: var(--color-orange-300);
+	--cs-color-accent-400: var(--color-orange-400);
+	--cs-color-accent-500: var(--color-orange-500);
+	--cs-color-accent-600: var(--color-orange-600);
+	--cs-color-accent-700: var(--color-orange-700);
+	--cs-color-accent-800: var(--color-orange-800);
+	--cs-color-accent-900: var(--color-orange-900);
+}
+
+[data-accent='sky-blue'] {
+	--cs-color-accent-50: var(--color-sky-50);
+	--cs-color-accent-100: var(--color-sky-100);
+	--cs-color-accent-200: var(--color-sky-200);
+	--cs-color-accent-300: var(--color-sky-300);
+	--cs-color-accent-400: var(--color-sky-400);
+	--cs-color-accent-500: var(--color-sky-500);
+	--cs-color-accent-600: var(--color-sky-600);
+	--cs-color-accent-700: var(--color-sky-700);
+	--cs-color-accent-800: var(--color-sky-800);
+	--cs-color-accent-900: var(--color-sky-900);
 }
 
 [data-accent='blue'] {
-  --cs-color-accent-50: var(--color-blue-50);
-  --cs-color-accent-100: var(--color-blue-100);
-  --cs-color-accent-200: var(--color-blue-200);
-  --cs-color-accent-300: var(--color-blue-300);
-  --cs-color-accent-400: var(--color-blue-400);
-  --cs-color-accent-500: var(--color-blue-500);
-  --cs-color-accent-600: var(--color-blue-600);
-  --cs-color-accent-700: var(--color-blue-700);
-  --cs-color-accent-800: var(--color-blue-800);
-  --cs-color-accent-900: var(--color-blue-900);
+	--cs-color-accent-50: var(--color-blue-50);
+	--cs-color-accent-100: var(--color-blue-100);
+	--cs-color-accent-200: var(--color-blue-200);
+	--cs-color-accent-300: var(--color-blue-300);
+	--cs-color-accent-400: var(--color-blue-400);
+	--cs-color-accent-500: var(--color-blue-500);
+	--cs-color-accent-600: var(--color-blue-600);
+	--cs-color-accent-700: var(--color-blue-700);
+	--cs-color-accent-800: var(--color-blue-800);
+	--cs-color-accent-900: var(--color-blue-900);
 }
 
 [data-accent='violet'] {
-  --cs-color-accent-50: var(--color-violet-50);
-  --cs-color-accent-100: var(--color-violet-100);
-  --cs-color-accent-200: var(--color-violet-200);
-  --cs-color-accent-300: var(--color-violet-300);
-  --cs-color-accent-400: var(--color-violet-400);
-  --cs-color-accent-500: var(--color-violet-500);
-  --cs-color-accent-600: var(--color-violet-600);
-  --cs-color-accent-700: var(--color-violet-700);
-  --cs-color-accent-800: var(--color-violet-800);
-  --cs-color-accent-900: var(--color-violet-900);
+	--cs-color-accent-50: var(--color-violet-50);
+	--cs-color-accent-100: var(--color-violet-100);
+	--cs-color-accent-200: var(--color-violet-200);
+	--cs-color-accent-300: var(--color-violet-300);
+	--cs-color-accent-400: var(--color-violet-400);
+	--cs-color-accent-500: var(--color-violet-500);
+	--cs-color-accent-600: var(--color-violet-600);
+	--cs-color-accent-700: var(--color-violet-700);
+	--cs-color-accent-800: var(--color-violet-800);
+	--cs-color-accent-900: var(--color-violet-900);
 }
 
 [data-accent='yellow'] {
-  --cs-color-accent-50: var(--color-yellow-50);
-  --cs-color-accent-100: var(--color-yellow-100);
-  --cs-color-accent-200: var(--color-yellow-200);
-  --cs-color-accent-300: var(--color-yellow-300);
-  --cs-color-accent-400: var(--color-yellow-400);
-  --cs-color-accent-500: var(--color-yellow-500);
-  --cs-color-accent-600: var(--color-yellow-600);
-  --cs-color-accent-700: var(--color-yellow-700);
-  --cs-color-accent-800: var(--color-yellow-800);
-  --cs-color-accent-900: var(--color-yellow-900);
+	--cs-color-accent-50: var(--color-yellow-50);
+	--cs-color-accent-100: var(--color-yellow-100);
+	--cs-color-accent-200: var(--color-yellow-200);
+	--cs-color-accent-300: var(--color-yellow-300);
+	--cs-color-accent-400: var(--color-yellow-400);
+	--cs-color-accent-500: var(--color-yellow-500);
+	--cs-color-accent-600: var(--color-yellow-600);
+	--cs-color-accent-700: var(--color-yellow-700);
+	--cs-color-accent-800: var(--color-yellow-800);
+	--cs-color-accent-900: var(--color-yellow-900);
 }
 
 [data-accent='red'] {
-  --cs-color-accent-50: var(--color-red-50);
-  --cs-color-accent-100: var(--color-red-100);
-  --cs-color-accent-200: var(--color-red-200);
-  --cs-color-accent-300: var(--color-red-300);
-  --cs-color-accent-400: var(--color-red-400);
-  --cs-color-accent-500: var(--color-red-500);
-  --cs-color-accent-600: var(--color-red-600);
-  --cs-color-accent-700: var(--color-red-700);
-  --cs-color-accent-800: var(--color-red-800);
-  --cs-color-accent-900: var(--color-red-900);
+	--cs-color-accent-50: var(--color-red-50);
+	--cs-color-accent-100: var(--color-red-100);
+	--cs-color-accent-200: var(--color-red-200);
+	--cs-color-accent-300: var(--color-red-300);
+	--cs-color-accent-400: var(--color-red-400);
+	--cs-color-accent-500: var(--color-red-500);
+	--cs-color-accent-600: var(--color-red-600);
+	--cs-color-accent-700: var(--color-red-700);
+	--cs-color-accent-800: var(--color-red-800);
+	--cs-color-accent-900: var(--color-red-900);
 }
 
 /* =========================================================================
- * 共通のフォント・レイアウト設定
- * ========================================================================= */
-:root {
-  --sl-font: 'Inter', 'Noto Sans', 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
-  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
-  --sl-content-width: 50rem;
-}
-
-/* 見出しは Starlight 既定だと h1 と h2 の差が小さいため 1 段階ずつ下げる */
-:root,
-:root[data-cs-theme] {
-  --sl-text-h2: var(--sl-text-2xl);
-  --sl-text-h3: var(--sl-text-xl);
-}
-
-/* =========================================================================
- * テーマ（data-cs-theme）ごとの Starlight カラー割当
- *
- * 陰影・境界線・インラインコード背景など Starlight が light/dark 基盤で
- * 定義する値を活かすため、DOM には次の 2 属性を同時に付与する:
- *   data-theme     … 'light' | 'dark'（Starlight の基盤配色を選択）
- *   data-cs-theme  … 'light' | 'dark' | 'black' | 'dark-blue' | 'pastel-orange'
- *                    （フロント由来の具体的な配色をこの層で上書き）
- * ここでは data-cs-theme に対してフロントの各テーマ値を割り当てる。
+ * 3. テーマトークン（data-cs-theme：ChuniSupport 本体と完全同期）
  * ========================================================================= */
 
-/* ---- 全テーマ共通：アクセントを --sl-color-accent 系へ接続 ---- */
-:root[data-cs-theme] {
-  --sl-color-accent-low: var(--cs-color-accent-900);
-  --sl-color-accent: var(--cs-color-accent-400);
-  /* 100 だと暗い背景上でほぼ白に見え、ボタン等が浮きすぎるため 300 に抑える */
-  --sl-color-accent-high: var(--cs-color-accent-300);
-}
-
-:root[data-cs-theme='light'],
-:root[data-cs-theme='pastel-orange'] {
-  --sl-color-accent-low: var(--cs-color-accent-100);
-  --sl-color-accent: var(--cs-color-accent-600);
-  --sl-color-accent-high: var(--cs-color-accent-900);
-}
-
-/* ---- light（フロント data-theme="light"） ---- */
-:root[data-cs-theme='light'] {
-  --sl-color-white: var(--color-gray-900); /* cs-text */
-  --sl-color-gray-1: var(--color-gray-800);
-  --sl-color-gray-2: var(--color-gray-600); /* cs-text-muted */
-  --sl-color-gray-3: var(--color-gray-500); /* cs-text-subtle */
-  --sl-color-gray-4: var(--color-gray-400); /* cs-border-strong */
-  --sl-color-gray-5: var(--color-gray-300); /* cs-border */
-  --sl-color-gray-6: var(--color-gray-100); /* cs-surface-muted */
-  --sl-color-gray-7: var(--color-gray-50);
-  --sl-color-black: var(--color-white); /* cs-bg */
-
-  --sl-color-bg-nav: var(--color-white);
-  --sl-color-bg-sidebar: var(--color-gray-50);
-}
-
-/* ---- dark（フロント data-theme="dark"：既定 / ダーク緑） ---- */
+/* ---- ダークグリーン（既定 / フロント data-theme="dark"） ---- */
 :root,
 :root[data-cs-theme='dark'] {
-  --sl-color-white: var(--color-gray-50); /* cs-text */
-  --sl-color-gray-1: var(--color-gray-200);
-  --sl-color-gray-2: var(--color-gray-300); /* cs-text-muted */
-  --sl-color-gray-3: var(--color-gray-500); /* cs-text-subtle */
-  --sl-color-gray-4: #2f6b53; /* cs-border-strong */
-  --sl-color-gray-5: #1d4a39; /* cs-border */
-  --sl-color-gray-6: #082018; /* cs-surface */
-  --sl-color-black: #03150f; /* cs-bg */
+	color-scheme: dark;
 
-  --sl-color-bg-nav: #082018;
-  --sl-color-bg-sidebar: #082018;
+	--cs-color-bg: #03150f;
+	--cs-color-surface: #082018;
+	--cs-color-surface-muted: #0d2a20;
+	--cs-color-surface-raised: #0b241b;
+	--cs-color-surface-hover: #123528;
+
+	--cs-color-text: var(--color-gray-50);
+	--cs-color-text-muted: var(--color-gray-300);
+	--cs-color-text-subtle: var(--color-gray-400);
+	--cs-color-text-inverse: #03150f;
+	--cs-color-nav-text: var(--color-gray-100);
+
+	--cs-color-border: #1d4a39;
+	--cs-color-border-strong: #2f6b53;
+	--cs-color-focus-ring: var(--cs-color-accent-400);
+
+	--cs-color-action-primary: var(--cs-color-accent-500);
+	--cs-color-action-primary-hover: var(--cs-color-accent-400);
+	--cs-color-action-primary-muted: color-mix(
+		in oklab,
+		var(--cs-color-accent-700) 35%,
+		var(--cs-color-surface)
+	);
+	--cs-color-action-primary-border: var(--cs-color-accent-700);
+	--cs-color-action-secondary: #1d4a39;
+	--cs-color-action-secondary-hover: #2f6b53;
+
+	--cs-color-input-bg: #051912;
+	--cs-color-input-border: #2f6b53;
+	--cs-color-input-border-hover: #3f8a6b;
+
+	--cs-color-link: var(--cs-color-accent-400);
+	--cs-color-link-hover: var(--cs-color-accent-300);
+
+	--cs-color-danger: var(--color-red-400);
+	--cs-color-danger-bg: color-mix(in oklab, var(--color-red-900) 35%, var(--cs-color-surface));
+	--cs-color-danger-border: var(--color-red-800);
+
+	--cs-color-success: var(--color-green-300);
+	--cs-color-success-bg: color-mix(in oklab, var(--color-green-900) 35%, var(--cs-color-surface));
+	--cs-color-success-border: var(--color-green-800);
+
+	--cs-color-warning: var(--color-yellow-300);
+	--cs-color-warning-bg: color-mix(in oklab, var(--color-yellow-900) 35%, var(--cs-color-surface));
+	--cs-color-warning-border: var(--color-yellow-800);
+
+	--cs-color-info: var(--color-teal-300);
+	--cs-color-info-bg: color-mix(in oklab, var(--color-teal-900) 35%, var(--cs-color-surface));
+	--cs-color-info-border: var(--color-teal-800);
 }
 
-/* ---- black（フロント data-theme="black"：ニュートラルな漆黒） ---- */
+/* ---- ブラック（フロント data-theme="black"） ---- */
 :root[data-cs-theme='black'] {
-  --sl-color-white: var(--color-gray-50);
-  --sl-color-gray-1: var(--color-gray-200);
-  --sl-color-gray-2: var(--color-gray-300);
-  --sl-color-gray-3: var(--color-gray-500);
-  --sl-color-gray-4: #666666; /* cs-border-strong */
-  --sl-color-gray-5: #444444; /* cs-border */
-  --sl-color-gray-6: #181818; /* cs-surface */
-  --sl-color-black: #111111; /* cs-bg */
+	color-scheme: dark;
 
-  --sl-color-bg-nav: #181818;
-  --sl-color-bg-sidebar: #181818;
+	--cs-color-bg: #111111;
+	--cs-color-surface: #181818;
+	--cs-color-surface-muted: #222222;
+	--cs-color-surface-raised: #1d1d1d;
+	--cs-color-surface-hover: #2b2b2b;
+
+	--cs-color-text: var(--color-gray-50);
+	--cs-color-text-muted: var(--color-gray-300);
+	--cs-color-text-subtle: var(--color-gray-400);
+	--cs-color-text-inverse: #111111;
+	--cs-color-nav-text: var(--color-gray-100);
+
+	--cs-color-border: #333333;
+	--cs-color-border-strong: #555555;
+	--cs-color-focus-ring: var(--cs-color-accent-400);
+
+	--cs-color-action-primary: var(--cs-color-accent-500);
+	--cs-color-action-primary-hover: var(--cs-color-accent-400);
+	--cs-color-action-primary-muted: color-mix(
+		in oklab,
+		var(--cs-color-accent-700) 42%,
+		var(--cs-color-surface)
+	);
+	--cs-color-action-primary-border: var(--cs-color-accent-700);
+	--cs-color-action-secondary: #333333;
+	--cs-color-action-secondary-hover: #4a4a4a;
+
+	--cs-color-input-bg: #121212;
+	--cs-color-input-border: #555555;
+	--cs-color-input-border-hover: #737373;
+
+	--cs-color-link: var(--cs-color-accent-400);
+	--cs-color-link-hover: var(--cs-color-accent-300);
+
+	--cs-color-danger: var(--color-red-400);
+	--cs-color-danger-bg: color-mix(in oklab, var(--color-red-900) 45%, var(--cs-color-surface));
+	--cs-color-danger-border: var(--color-red-800);
+
+	--cs-color-success: var(--color-green-300);
+	--cs-color-success-bg: color-mix(in oklab, var(--color-green-900) 45%, var(--cs-color-surface));
+	--cs-color-success-border: var(--color-green-800);
+
+	--cs-color-warning: var(--color-yellow-300);
+	--cs-color-warning-bg: color-mix(in oklab, var(--color-yellow-900) 45%, var(--cs-color-surface));
+	--cs-color-warning-border: var(--color-yellow-800);
+
+	--cs-color-info: var(--color-teal-300);
+	--cs-color-info-bg: color-mix(in oklab, var(--color-teal-900) 45%, var(--cs-color-surface));
+	--cs-color-info-border: var(--color-teal-800);
 }
 
-/* ---- dark-blue（フロント data-theme="dark-blue"：紺色ダーク） ---- */
+/* ---- ダークブルー（フロント data-theme="dark-blue"） ---- */
 :root[data-cs-theme='dark-blue'] {
-  --sl-color-white: var(--color-gray-50);
-  --sl-color-gray-1: var(--color-gray-200);
-  --sl-color-gray-2: var(--color-gray-300);
-  --sl-color-gray-3: var(--color-gray-500);
-  --sl-color-gray-4: #2f4480; /* cs-border-strong */
-  --sl-color-gray-5: #1e2d5e; /* cs-border */
-  --sl-color-gray-6: #0f1526; /* cs-surface */
-  --sl-color-black: #0a0e1a; /* cs-bg */
+	color-scheme: dark;
 
-  --sl-color-bg-nav: #0f1526;
-  --sl-color-bg-sidebar: #0f1526;
+	--cs-color-bg: #0a0e1a;
+	--cs-color-surface: #0f1526;
+	--cs-color-surface-muted: #151b30;
+	--cs-color-surface-raised: #12182a;
+	--cs-color-surface-hover: #1c2340;
+
+	--cs-color-text: var(--color-gray-50);
+	--cs-color-text-muted: var(--color-gray-300);
+	--cs-color-text-subtle: var(--color-gray-400);
+	--cs-color-text-inverse: #0a0e1a;
+	--cs-color-nav-text: var(--color-gray-100);
+
+	--cs-color-border: #1e2d5e;
+	--cs-color-border-strong: #2f4480;
+	--cs-color-focus-ring: var(--cs-color-accent-400);
+
+	--cs-color-action-primary: var(--cs-color-accent-500);
+	--cs-color-action-primary-hover: var(--cs-color-accent-400);
+	--cs-color-action-primary-muted: color-mix(
+		in oklab,
+		var(--cs-color-accent-700) 35%,
+		var(--cs-color-surface)
+	);
+	--cs-color-action-primary-border: var(--cs-color-accent-700);
+	--cs-color-action-secondary: #1e2d5e;
+	--cs-color-action-secondary-hover: #2f4480;
+
+	--cs-color-input-bg: #0b1020;
+	--cs-color-input-border: #2f4480;
+	--cs-color-input-border-hover: #3f5aa0;
+
+	--cs-color-link: var(--cs-color-accent-400);
+	--cs-color-link-hover: var(--cs-color-accent-300);
+
+	--cs-color-danger: var(--color-red-400);
+	--cs-color-danger-bg: color-mix(in oklab, var(--color-red-900) 35%, var(--cs-color-surface));
+	--cs-color-danger-border: var(--color-red-800);
+
+	--cs-color-success: var(--color-green-300);
+	--cs-color-success-bg: color-mix(in oklab, var(--color-green-900) 35%, var(--cs-color-surface));
+	--cs-color-success-border: var(--color-green-800);
+
+	--cs-color-warning: var(--color-yellow-300);
+	--cs-color-warning-bg: color-mix(in oklab, var(--color-yellow-900) 35%, var(--cs-color-surface));
+	--cs-color-warning-border: var(--color-yellow-800);
+
+	--cs-color-info: var(--color-blue-300);
+	--cs-color-info-bg: color-mix(in oklab, var(--color-blue-800) 35%, var(--cs-color-surface));
+	--cs-color-info-border: var(--color-blue-800);
 }
 
-/* ---- pastel-orange（フロント data-theme="pastel-orange"：淡いオレンジのライト） ---- */
-:root[data-cs-theme='pastel-orange'] {
-  --sl-color-white: #3d2e24; /* cs-text */
-  --sl-color-gray-1: #4a382c;
-  --sl-color-gray-2: var(--color-gray-600); /* cs-text-muted */
-  --sl-color-gray-3: var(--color-gray-500); /* cs-text-subtle */
-  --sl-color-gray-4: #ecc09f; /* cs-border-strong */
-  --sl-color-gray-5: #f5d5bc; /* cs-border */
-  --sl-color-gray-6: #fceddc; /* cs-surface-muted */
-  --sl-color-gray-7: #fef6eb;
-  --sl-color-black: #fcf0e0; /* cs-bg */
+/* ---- ホワイト（フロント data-theme="light"） ---- */
+:root[data-cs-theme='light'] {
+	color-scheme: light;
 
-  --sl-color-bg-nav: #fef6eb;
-  --sl-color-bg-sidebar: #fef6eb;
+	--cs-color-bg: var(--color-white);
+	--cs-color-surface: var(--color-white);
+	--cs-color-surface-muted: var(--color-gray-100);
+	--cs-color-surface-raised: var(--color-white);
+	--cs-color-surface-hover: var(--color-gray-200);
+
+	--cs-color-text: var(--color-gray-900);
+	--cs-color-text-muted: var(--color-gray-600);
+	--cs-color-text-subtle: var(--color-gray-500);
+	--cs-color-text-inverse: var(--color-white);
+	--cs-color-nav-text: var(--color-gray-700);
+
+	--cs-color-border: var(--color-gray-300);
+	--cs-color-border-strong: var(--color-gray-400);
+	--cs-color-focus-ring: var(--cs-color-accent-500);
+
+	--cs-color-action-primary: var(--cs-color-accent-700);
+	--cs-color-action-primary-hover: var(--cs-color-accent-800);
+	--cs-color-action-primary-muted: var(--cs-color-accent-50);
+	--cs-color-action-primary-border: var(--cs-color-accent-200);
+	--cs-color-action-secondary: var(--color-gray-200);
+	--cs-color-action-secondary-hover: var(--color-gray-300);
+
+	--cs-color-input-bg: var(--color-white);
+	--cs-color-input-border: var(--color-gray-400);
+	--cs-color-input-border-hover: var(--color-gray-500);
+
+	--cs-color-link: var(--cs-color-accent-700);
+	--cs-color-link-hover: var(--cs-color-accent-800);
+
+	--cs-color-danger: var(--color-red-600);
+	--cs-color-danger-bg: var(--color-red-50);
+	--cs-color-danger-border: var(--color-red-300);
+
+	--cs-color-success: var(--color-green-700);
+	--cs-color-success-bg: var(--color-green-50);
+	--cs-color-success-border: var(--color-green-300);
+
+	--cs-color-warning: var(--color-yellow-700);
+	--cs-color-warning-bg: var(--color-yellow-50);
+	--cs-color-warning-border: var(--color-yellow-300);
+
+	--cs-color-info: var(--color-blue-700);
+	--cs-color-info-bg: var(--color-blue-50);
+	--cs-color-info-border: var(--color-blue-300);
+}
+
+/* ---- パステルオレンジ（フロント data-theme="pastel-orange"） ---- */
+:root[data-cs-theme='pastel-orange'] {
+	color-scheme: light;
+
+	--cs-color-bg: #fcf0e0;
+	--cs-color-surface: #fef6eb;
+	--cs-color-surface-muted: #fceddc;
+	--cs-color-surface-raised: #fffaf2;
+	--cs-color-surface-hover: #fce3c8;
+
+	--cs-color-text: #3d2e24;
+	--cs-color-text-muted: var(--color-gray-600);
+	--cs-color-text-subtle: var(--color-gray-500);
+	--cs-color-text-inverse: var(--color-white);
+	--cs-color-nav-text: #4a382c;
+
+	--cs-color-border: #f0ccb0;
+	--cs-color-border-strong: #e3b38c;
+	--cs-color-focus-ring: var(--cs-color-accent-500);
+
+	--cs-color-action-primary: var(--cs-color-accent-700);
+	--cs-color-action-primary-hover: var(--cs-color-accent-800);
+	--cs-color-action-primary-muted: var(--cs-color-accent-50);
+	--cs-color-action-primary-border: var(--cs-color-accent-200);
+	--cs-color-action-secondary: #f5d5bc;
+	--cs-color-action-secondary-hover: #ecc09f;
+
+	--cs-color-input-bg: #fffaf2;
+	--cs-color-input-border: #e3b38c;
+	--cs-color-input-border-hover: #d49c6e;
+
+	--cs-color-link: var(--cs-color-accent-700);
+	--cs-color-link-hover: var(--cs-color-accent-800);
+
+	--cs-color-danger: var(--color-red-600);
+	--cs-color-danger-bg: var(--color-red-50);
+	--cs-color-danger-border: var(--color-red-300);
+
+	--cs-color-success: var(--color-green-700);
+	--cs-color-success-bg: var(--color-green-50);
+	--cs-color-success-border: var(--color-green-300);
+
+	--cs-color-warning: var(--color-yellow-700);
+	--cs-color-warning-bg: var(--color-yellow-50);
+	--cs-color-warning-border: var(--color-yellow-300);
+
+	--cs-color-info: var(--color-blue-700);
+	--cs-color-info-bg: var(--color-blue-50);
+	--cs-color-info-border: var(--color-blue-300);
+}
+
+/* 明るい背景でスカイブルー・イエローを使う際のフォーカスリング視認性を補正 */
+:root:is([data-cs-theme='light'], [data-cs-theme='pastel-orange']):is(
+		[data-accent='sky-blue'],
+		[data-accent='yellow']
+	) {
+	--cs-color-focus-ring: var(--cs-color-accent-600);
 }
 
 /* =========================================================================
- * 既存のカスタム調整
+ * 4. 市松模様背景パターン & Starlight 変数ブリッジ
  * ========================================================================= */
-:where(a, button, input):focus-visible {
-  outline: 3px solid var(--sl-color-accent);
-  outline-offset: 3px;
+:root,
+:root[data-cs-theme] {
+	--cs-color-page-bg-pattern: color-mix(in oklab, var(--cs-color-bg) 92%, var(--cs-color-border));
+	--cs-size-page-bg-pattern: 16px;
+
+	/* Starlight 変数を --cs-color-* トークンへ一元接続 */
+	--sl-color-white: var(--cs-color-text);
+	--sl-color-gray-1: var(--cs-color-nav-text);
+	--sl-color-gray-2: var(--cs-color-text-muted);
+	--sl-color-gray-3: var(--cs-color-text-subtle);
+	--sl-color-gray-4: var(--cs-color-border-strong);
+	--sl-color-gray-5: var(--cs-color-border);
+	--sl-color-gray-6: var(--cs-color-surface-muted);
+	--sl-color-gray-7: var(--cs-color-surface-hover);
+	--sl-color-black: var(--cs-color-bg);
+
+	--sl-color-accent-low: var(--cs-color-action-primary-muted);
+	--sl-color-accent: var(--cs-color-action-primary);
+	--sl-color-accent-high: var(--cs-color-link);
+
+	--sl-color-text: var(--cs-color-text);
+	--sl-color-text-accent: var(--cs-color-link);
+	--sl-color-text-invert: var(--cs-color-text-inverse);
+	--sl-color-bg: var(--cs-color-bg);
+	--sl-color-bg-nav: var(--cs-color-surface);
+	--sl-color-bg-sidebar: var(--cs-color-surface);
+	--sl-color-bg-inline-code: var(--cs-color-surface-muted);
+	--sl-color-bg-accent: var(--cs-color-action-primary);
+	--sl-color-hairline-light: var(--cs-color-border);
+	--sl-color-hairline: var(--cs-color-border);
+	--sl-color-hairline-shade: var(--cs-color-border);
+
+	/* 見出しサイズ階層（日本語ドキュメントで過大にならないよう整理） */
+	--sl-text-h1: 1.875rem;
+	--sl-text-h2: 1.375rem;
+	--sl-text-h3: 1.125rem;
+	--sl-text-h4: 1rem;
+	--sl-text-h5: 0.9375rem;
+	--sl-line-height: 1.75;
+	--sl-line-height-headings: 1.3;
 }
 
-.hero h1 {
-  text-wrap: balance;
+@media (min-width: 50rem) {
+	:root,
+	:root[data-cs-theme] {
+		--sl-text-h1: 2.125rem;
+		--sl-text-h2: 1.5rem;
+		--sl-text-h3: 1.2rem;
+		--sl-text-h4: 1.0625rem;
+	}
 }
 
-.hero .tagline {
-  max-width: 42rem;
+/* =========================================================================
+ * 5. ベース・市松背景・フォーカスリング
+ * ========================================================================= */
+body {
+	background-color: var(--cs-color-bg);
+	background-image: repeating-conic-gradient(
+		var(--cs-color-bg) 0 25%,
+		var(--cs-color-page-bg-pattern) 0 50%
+	);
+	background-size: var(--cs-size-page-bg-pattern) var(--cs-size-page-bg-pattern);
+	background-attachment: fixed;
+	color: var(--cs-color-text);
+	-webkit-font-smoothing: antialiased;
 }
 
-/*
- * サイドバーの選択中項目：Starlight 既定はアクセント色のベタ塗りで主張が強いため、
- * 淡い背景＋左ラインで示す。
- */
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+	outline: 2px solid var(--cs-color-focus-ring);
+	outline-offset: 2px;
+}
+
+/* =========================================================================
+ * 6. ヘッダー・検索・モバイルメニューボタン
+ * ========================================================================= */
+header.header {
+	background-color: var(--cs-color-surface);
+	border-bottom: 1px solid var(--cs-color-border);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+
+/* 検索トリガーボタンをフロントの入力欄トーンに揃える */
+site-search button[data-open-modal] {
+	height: 2.25rem;
+	min-width: 2.25rem;
+	padding-inline: 0.5rem;
+	border: 1px solid var(--cs-color-border);
+	border-radius: 0.375rem;
+	background-color: var(--cs-color-surface-muted);
+	color: var(--cs-color-text-muted);
+	justify-content: center;
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease,
+		color 150ms ease;
+}
+
+site-search button[data-open-modal]:hover {
+	border-color: var(--cs-color-border-strong);
+	background-color: var(--cs-color-surface-hover);
+	color: var(--cs-color-text);
+}
+
+@media (min-width: 50rem) {
+	site-search button[data-open-modal] {
+		max-width: 14rem;
+		min-width: 11.5rem;
+		padding-inline: 0.625rem;
+		justify-content: flex-start;
+		font-size: 0.8125rem;
+	}
+}
+
+site-search button[data-open-modal] > kbd {
+	background-color: var(--cs-color-surface);
+	border: 1px solid var(--cs-color-border);
+	border-radius: 0.25rem;
+	color: var(--cs-color-text-subtle);
+	font-family: var(--cs-font-mono);
+	font-size: 0.6875rem;
+}
+
+/* 検索モーダル */
+site-search dialog {
+	border: 0;
+	border-radius: 0;
+	background-color: var(--cs-color-surface);
+	box-shadow: none;
+}
+
+@media (min-width: 50rem) {
+	site-search dialog {
+		border: 1px solid var(--cs-color-border-strong);
+		border-radius: 0.625rem;
+		box-shadow: 0 20px 45px rgb(0 0 0 / 32%);
+	}
+}
+
+site-search dialog::backdrop {
+	background-color: rgb(0 0 0 / 55%);
+	backdrop-filter: blur(2px);
+}
+
+/* モバイルの「キャンセル」ボタン（日本語5文字）と検索入力欄が重ならないよう十分な幅を確保 */
+#starlight__search {
+	--sl-search-cancel-space: 6rem;
+	--pagefind-ui-background: var(--cs-color-input-bg);
+	--pagefind-ui-border: var(--cs-color-input-border);
+	--pagefind-ui-border-radius: 0.5rem;
+	--pagefind-ui-text: var(--cs-color-text-muted);
+	--pagefind-ui-primary: var(--cs-color-text);
+}
+
+@media (min-width: 50rem) {
+	#starlight__search {
+		--sl-search-cancel-space: 0px;
+	}
+}
+
+site-search button[data-close-modal] {
+	white-space: nowrap;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--cs-color-link);
+}
+
+/* 検索入力欄は border と外側 outline の二重枠を避け、単一のインセットリングで表現 */
+#starlight__search .pagefind-ui__search-input {
+	background-color: var(--cs-color-input-bg);
+	border-color: var(--cs-color-input-border);
+	border-radius: 0.5rem;
+	color: var(--cs-color-text);
+}
+
+#starlight__search .pagefind-ui__search-input::placeholder {
+	color: var(--cs-color-text-subtle);
+	opacity: 1;
+}
+
+#starlight__search .pagefind-ui__search-input:focus,
+#starlight__search .pagefind-ui__search-input:focus-visible {
+	outline: none;
+	border-color: var(--cs-color-focus-ring);
+	box-shadow: inset 0 0 0 1px var(--cs-color-focus-ring);
+}
+
+/* モバイルメニューのトグルボタンをフロントの AppIconButton 調に揃える */
+.sl-menu-button {
+	border: 1px solid var(--cs-color-border-strong) !important;
+	border-radius: 0.375rem !important;
+	width: 2.25rem !important;
+	height: 2.25rem !important;
+	top: calc((var(--sl-nav-height) - 2.25rem) / 2) !important;
+	background-color: var(--cs-color-surface) !important;
+	color: var(--cs-color-nav-text) !important;
+	box-shadow: none !important;
+	transition:
+		background-color 150ms ease,
+		border-color 150ms ease,
+		color 150ms ease;
+}
+
+.sl-menu-button:hover {
+	background-color: var(--cs-color-surface-hover) !important;
+	color: var(--cs-color-text) !important;
+}
+
+.sl-menu-button:has(~ :popover-open) {
+	background-color: var(--cs-color-action-primary-muted) !important;
+	border-color: var(--cs-color-action-primary) !important;
+	color: var(--cs-color-link) !important;
+}
+
+/* =========================================================================
+ * 7. サイドバー & 右目次（TOC）
+ * ========================================================================= */
+.sidebar-pane {
+	background-color: var(--cs-color-surface);
+	border-inline-end: 1px solid var(--cs-color-border);
+}
+
+.sidebar-content {
+	padding-block: 1rem 1.5rem;
+}
+
+.sidebar-content summary {
+	padding: 0.375rem 0.5rem;
+	border-radius: 0.375rem;
+	color: var(--cs-color-text);
+	transition: background-color 140ms ease;
+}
+
+.sidebar-content summary:hover {
+	background-color: var(--cs-color-surface-muted);
+}
+
+.sidebar-content .large {
+	font-size: 0.875rem;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	color: var(--cs-color-text);
+}
+
+.sidebar-content ul ul li {
+	border-inline-start-color: var(--cs-color-border);
+}
+
+.sidebar-content a {
+	border-radius: 0.375rem;
+	padding: 0.4rem 0.625rem;
+	color: var(--cs-color-nav-text);
+	font-size: 0.875rem;
+	line-height: 1.45;
+	transition:
+		background-color 140ms ease,
+		color 140ms ease;
+}
+
+.sidebar-content a:hover,
+.sidebar-content a:focus {
+	background-color: var(--cs-color-surface-hover);
+	color: var(--cs-color-text);
+}
+
 .sidebar-content a[aria-current='page'],
 .sidebar-content a[aria-current='page']:hover,
 .sidebar-content a[aria-current='page']:focus {
-  color: var(--sl-color-white);
-  background-color: var(--sl-color-accent-low);
-  box-shadow: inset 3px 0 0 var(--sl-color-text-accent);
+	color: var(--cs-color-link);
+	background-color: var(--cs-color-action-primary-muted);
+	box-shadow: inset 3px 0 0 var(--cs-color-action-primary);
+	font-weight: 700;
 }
 
-table td:nth-child(2),
-table th:nth-child(2) {
-  white-space: nowrap;
+/* 右サイドバー（このページの内容） */
+@media (min-width: 72rem) {
+	.right-sidebar {
+		border-inline-start: 1px solid var(--cs-color-border);
+		background-color: var(--cs-color-surface);
+	}
 }
 
-/* トップページの導線カード（3 枚）を 1 行に並べる */
+.right-sidebar-panel h2 {
+	font-size: 0.75rem !important;
+	font-weight: 700 !important;
+	letter-spacing: 0.04em;
+	color: var(--cs-color-text-muted) !important;
+	margin-bottom: 0.625rem !important;
+}
+
+.right-sidebar-panel starlight-toc a {
+	border-inline-start: 2px solid transparent;
+	border-radius: 0 0.25rem 0.25rem 0;
+	padding-block: 0.3rem;
+	color: var(--cs-color-text-muted);
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	transition:
+		color 140ms ease,
+		border-color 140ms ease,
+		background-color 140ms ease;
+}
+
+.right-sidebar-panel starlight-toc a:hover {
+	color: var(--cs-color-text);
+	background-color: var(--cs-color-surface-muted);
+}
+
+.right-sidebar-panel starlight-toc a[aria-current='true'] {
+	color: var(--cs-color-link);
+	border-inline-start-color: var(--cs-color-action-primary);
+	background-color: var(--cs-color-action-primary-muted);
+	font-weight: 600;
+}
+
+/* モバイル目次バー */
+mobile-starlight-toc nav {
+	background-color: var(--cs-color-surface);
+	border-top-color: var(--cs-color-border);
+}
+
+mobile-starlight-toc summary {
+	border-bottom-color: var(--cs-color-border);
+}
+
+mobile-starlight-toc .toggle {
+	background-color: var(--cs-color-surface-muted);
+	border-color: var(--cs-color-border);
+	border-radius: 0.375rem;
+	color: var(--cs-color-text);
+	font-weight: 600;
+}
+
+mobile-starlight-toc .dropdown {
+	background-color: var(--cs-color-surface);
+	border-color: var(--cs-color-border);
+}
+
+/* =========================================================================
+ * 8. メインコンテンツ領域（市松背景上のサーフェスシート構成）
+ * ========================================================================= */
+
+/* トップページ（splash + hero）は市松背景上にヒーローカードと導線カードを直接並べる */
+:root[data-has-hero] .content-panel {
+	padding-block: 1.5rem 2.5rem;
+}
+
+:root[data-has-hero] main .sl-container {
+	max-width: 62rem;
+	margin-inline: auto;
+}
+
 @media (min-width: 50rem) {
-  [data-has-hero] .card-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+	:root[data-has-hero] .content-panel {
+		padding-block: 2.25rem 3rem;
+	}
+}
+
+/* 通常ドキュメント / お知らせ / 利用規約ページはクリーンなサーフェスシートで可読性を確保 */
+:root:not([data-has-hero]) main {
+	padding: 0;
+}
+
+:root:not([data-has-hero]) .content-panel {
+	background-color: var(--cs-color-surface);
+	border-inline: 0;
+	padding-inline: 1rem;
+}
+
+:root:not([data-has-hero]) .content-panel:first-of-type {
+	padding-block: 1.5rem 1.25rem;
+	border-bottom: 1px solid var(--cs-color-border);
+}
+
+:root:not([data-has-hero]) .content-panel + .content-panel {
+	border-top: 0;
+	padding-block: 1.5rem 2.25rem;
+}
+
+@media (min-width: 50rem) {
+	:root:not([data-has-hero]) main {
+		padding: 1.5rem 1.5rem 3rem;
+	}
+
+	:root:not([data-has-hero]) .content-panel {
+		max-width: calc(var(--sl-content-width) + 4rem);
+		margin-inline: auto;
+		padding-inline: 2rem;
+		border-inline: 1px solid var(--cs-color-border);
+	}
+
+	:root:not([data-has-hero]) .content-panel:first-of-type {
+		border-top: 1px solid var(--cs-color-border);
+		border-radius: 0.625rem 0.625rem 0 0;
+		padding-block: 1.75rem 1.375rem;
+	}
+
+	:root:not([data-has-hero]) .content-panel:last-of-type {
+		border-bottom: 1px solid var(--cs-color-border);
+		border-radius: 0 0 0.625rem 0.625rem;
+		padding-block: 1.75rem 2.25rem;
+	}
+
+	:root:not([data-has-hero]) .content-panel:only-of-type {
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.625rem;
+	}
+
+	:root:not([data-has-hero]) main .sl-container {
+		margin-inline: auto;
+	}
+}
+
+/* サイドバーなしページ（お知らせ・利用規約等）の本文幅を読みやすい幅に整える */
+html:not([data-has-sidebar]):not([data-has-hero]) {
+	--sl-content-width: 54rem;
+}
+
+/* ページタイトル（PageTitle） */
+h1#_top:not(.cs-hero h1) {
+	font-size: var(--sl-text-h1);
+	font-weight: 700;
+	line-height: 1.28;
+	letter-spacing: -0.015em;
+	color: var(--cs-color-text);
+}
+
+/* =========================================================================
+ * 9. Markdown タイポグラフィ・見出し・テーブル・コード・Aside
+ * ========================================================================= */
+.sl-markdown-content {
+	color: var(--cs-color-text);
+}
+
+.sl-markdown-content p,
+.sl-markdown-content li {
+	line-height: 1.8;
+}
+
+.sl-markdown-content :is(h2, h3, h4, h5, h6):not(:where(.not-content *)) {
+	color: var(--cs-color-text);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h2:not(:where(.not-content *)),
+.sl-markdown-content > h2:not(:where(.not-content *)) {
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--cs-color-border);
+	margin-top: 2.25rem;
+}
+
+.sl-markdown-content .sl-heading-wrapper.level-h3:not(:where(.not-content *)),
+.sl-markdown-content > h3:not(:where(.not-content *)) {
+	margin-top: 1.75rem;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)) {
+	color: var(--cs-color-link);
+	text-underline-offset: 0.2em;
+	text-decoration-thickness: 1px;
+	transition: color 140ms ease;
+}
+
+.sl-markdown-content a:hover:not(:where(.not-content *)) {
+	color: var(--cs-color-link-hover);
+}
+
+/* 見出しアンカーリンク */
+.sl-markdown-content .sl-anchor-link {
+	color: var(--cs-color-text-subtle);
+	transition: color 140ms ease;
+}
+
+.sl-markdown-content .sl-anchor-link:hover {
+	color: var(--cs-color-link);
+}
+
+/* インラインコード */
+.sl-markdown-content code:not(:where(.not-content *, pre code)) {
+	background-color: var(--cs-color-surface-muted);
+	border: 1px solid var(--cs-color-border);
+	border-radius: 0.25rem;
+	padding: 0.1rem 0.375rem;
+	font-size: 0.85em;
+	color: var(--cs-color-text);
+}
+
+.sl-markdown-content a:has(> code):not(:where(.not-content *)) {
+	text-decoration: none;
+}
+
+.sl-markdown-content a:not(:where(.not-content *)) > code {
+	background-color: var(--cs-color-action-primary-muted);
+	border-color: var(--cs-color-action-primary-border);
+	color: var(--cs-color-link);
+	transition:
+		border-color 140ms ease,
+		color 140ms ease;
+}
+
+.sl-markdown-content a:hover:not(:where(.not-content *)) > code {
+	border-color: var(--cs-color-action-primary);
+	color: var(--cs-color-link-hover);
+}
+
+.sl-markdown-content :is(h2, h3, h4) code:not(:where(.not-content *)) {
+	font-size: 0.88em;
+	font-weight: 600;
+}
+
+/* コードブロック（Expressive Code） */
+.expressive-code {
+	--ec-brdRad: 0.5rem;
+	--ec-brdCol: var(--cs-color-border);
+}
+
+.expressive-code .frame {
+	box-shadow: none !important;
+}
+
+/* 引用 */
+.sl-markdown-content blockquote:not(:where(.not-content *)) {
+	border-inline-start: 3px solid var(--cs-color-action-primary);
+	background-color: var(--cs-color-surface-muted);
+	border-radius: 0 0.375rem 0.375rem 0;
+	padding: 0.75rem 1rem;
+	color: var(--cs-color-text-muted);
+}
+
+/* 区切り線 */
+.sl-markdown-content hr:not(:where(.not-content *)) {
+	border: 0;
+	border-bottom: 1px solid var(--cs-color-border);
+	margin-block: 2rem;
+}
+
+/* テーブル（API リファレンス向けの高視認性スタイル） */
+.sl-markdown-content table:not(:where(.not-content *)) {
+	display: block;
+	overflow-x: auto;
+	border-spacing: 0;
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.sl-markdown-content thead th:not(:where(.not-content *)) {
+	background-color: var(--cs-color-surface-muted);
+	color: var(--cs-color-text);
+	font-weight: 700;
+	border-top: 1px solid var(--cs-color-border);
+	border-bottom: 1px solid var(--cs-color-border-strong);
+	padding: 0.625rem 0.875rem;
+	white-space: nowrap;
+}
+
+.sl-markdown-content thead th:first-child:not(:where(.not-content *)) {
+	border-inline-start: 1px solid var(--cs-color-border);
+	border-top-left-radius: 0.375rem;
+	padding-inline-start: 0.875rem;
+}
+
+.sl-markdown-content thead th:last-child:not(:where(.not-content *)) {
+	border-inline-end: 1px solid var(--cs-color-border);
+	border-top-right-radius: 0.375rem;
+	padding-inline-end: 0.875rem;
+}
+
+.sl-markdown-content tbody td:not(:where(.not-content *)) {
+	border-bottom: 1px solid var(--cs-color-border);
+	padding: 0.625rem 0.875rem;
+	vertical-align: top;
+}
+
+.sl-markdown-content tbody td:first-child:not(:where(.not-content *)) {
+	border-inline-start: 1px solid var(--cs-color-border);
+	padding-inline-start: 0.875rem;
+}
+
+.sl-markdown-content tbody td:last-child:not(:where(.not-content *)) {
+	border-inline-end: 1px solid var(--cs-color-border);
+	padding-inline-end: 0.875rem;
+}
+
+.sl-markdown-content tbody tr:last-child td:first-child:not(:where(.not-content *)) {
+	border-bottom-left-radius: 0.375rem;
+}
+
+.sl-markdown-content tbody tr:last-child td:last-child:not(:where(.not-content *)) {
+	border-bottom-right-radius: 0.375rem;
+}
+
+.sl-markdown-content tbody tr:hover td:not(:where(.not-content *)) {
+	background-color: var(--cs-color-surface-muted);
+}
+
+/* デスクトップ以上：型・HTTP 列の折り返し防止と説明欄の最小幅確保 */
+@media (min-width: 44rem) {
+	table td:nth-child(2),
+	table th:nth-child(2) {
+		white-space: nowrap;
+	}
+
+	.sl-markdown-content table[data-cs-table='spec-3'] td:nth-child(3):not(:where(.not-content *)),
+	.sl-markdown-content table[data-cs-table='spec-4'] td:nth-child(4):not(:where(.not-content *)) {
+		min-width: 15rem;
+	}
+}
+
+/* モバイル（44rem 未満）：横スクロール不要のコンパクトなカード型リストへ変換 */
+@media (max-width: 43.99rem) {
+	.sl-markdown-content table[data-cs-table]:not(:where(.not-content *)) {
+		display: block;
+		overflow: visible;
+		width: 100%;
+	}
+
+	.sl-markdown-content table[data-cs-table] thead:not(:where(.not-content *)) {
+		display: none;
+	}
+
+	/* Starlight の隣接兄弟 margin-top (--sl-content-gap-y) が flex/block 化した tr/td に効くのを防ぐ */
+	.sl-markdown-content table[data-cs-table] :is(tbody, tr, td):not(:where(.not-content *)) {
+		margin-top: 0;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody:not(:where(.not-content *)) {
+		display: block;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface);
+		overflow: hidden;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:not(:where(.not-content *)) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 0.5rem;
+		padding: 0.5625rem 0.75rem;
+		border-bottom: 1px solid var(--cs-color-border);
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:last-child:not(:where(.not-content *)) {
+		border-bottom: 0;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:hover td:not(:where(.not-content *)) {
+		background-color: transparent;
+	}
+
+	@media (hover: hover) {
+		.sl-markdown-content table[data-cs-table] tbody tr:hover:not(:where(.not-content *)) {
+			background-color: var(--cs-color-surface-muted);
+		}
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody td:not(:where(.not-content *)) {
+		display: block;
+		border: 0;
+		border-radius: 0;
+		padding: 0;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		min-width: 0;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody td code:not(:where(.not-content *)) {
+		margin-block: 0;
+		overflow-wrap: anywhere;
+	}
+
+	/* 1 列目：フィールド名・コード名・項目名 */
+	.sl-markdown-content table[data-cs-table] tbody td:nth-child(1):not(:where(.not-content *)) {
+		display: inline-flex;
+		align-items: center;
+		font-weight: 600;
+		color: var(--cs-color-text);
+		line-height: 1.4;
+		max-width: 100%;
+	}
+
+	/* 説明付き 3 列 / 4 列・比較テーブルの 2 列目（型・HTTP 等のメタバッジ） */
+	.sl-markdown-content
+		:is(
+			table[data-cs-table='spec-3'],
+			table[data-cs-table='spec-4'],
+			table[data-cs-table='stacked']
+		)
+		tbody
+		td:nth-child(2):not(:where(.not-content *)) {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.1rem 0.4rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.25rem;
+		background-color: var(--cs-color-surface-muted);
+		color: var(--cs-color-text-muted);
+		font-family: var(--cs-font-mono);
+		font-size: 0.75rem;
+		line-height: 1.35;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table]
+		tbody
+		td:nth-child(2)[data-label='HTTP']:not(:where(.not-content *))::before {
+		content: 'HTTP ';
+		color: var(--cs-color-text-subtle);
+	}
+
+	/* 2 列目の中身自体が code 要素のときは二重枠を避ける */
+	.sl-markdown-content
+		table[data-cs-table]
+		tbody
+		td:nth-child(2):has(> code):not(:where(.not-content *)) {
+		padding: 0;
+		border: 0;
+		background-color: transparent;
+	}
+
+	/* 4 列テーブルの 3 列目（必須など。空セルは表示しない） */
+	.sl-markdown-content
+		table[data-cs-table='spec-4']
+		tbody
+		td:nth-child(3):empty:not(:where(.not-content *)) {
+		display: none;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table='spec-4']
+		tbody
+		td:nth-child(3):not(:empty):not(:where(.not-content *)) {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		padding: 0.1rem 0.4rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.25rem;
+		background-color: var(--cs-color-surface-muted);
+		color: var(--cs-color-text-muted);
+		font-size: 0.75rem;
+		line-height: 1.35;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table='spec-4']
+		tbody
+		td:nth-child(3):not(:empty):not(:where(.not-content *))::before {
+		content: attr(data-label) ': ';
+		color: var(--cs-color-text-subtle);
+	}
+
+	/* 説明欄（横幅 100% を確保してコンパクトに表示） */
+	.sl-markdown-content
+		:is(
+			table[data-cs-table='spec-3'] tbody td:nth-child(3),
+			table[data-cs-table='spec-4'] tbody td:nth-child(4)
+		):not(:where(.not-content *)) {
+		flex: 1 0 100%;
+		margin-top: 0.125rem;
+		color: var(--cs-color-nav-text);
+		font-size: 0.84375rem;
+		line-height: 1.55;
+	}
+
+	/* 2 列テーブル（目的 / エンドポイント、レートリミット等） */
+	.sl-markdown-content table[data-cs-table='pair'] tbody tr:not(:where(.not-content *)) {
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.25rem 0.75rem;
+	}
+
+	.sl-markdown-content table[data-cs-table='pair'] tbody td:nth-child(2):not(:where(.not-content *)) {
+		color: var(--cs-color-nav-text);
+		font-size: 0.84375rem;
+	}
+
+	/* 比較テーブル（通常楽曲 / WORLD'S END 等）：各列をラベル付きで縦積み */
+	.sl-markdown-content
+		table[data-cs-table='stacked']
+		tbody
+		td:nth-child(n + 3):not(:where(.not-content *)) {
+		flex: 1 0 100%;
+		display: block;
+		padding-top: 0.3rem;
+		margin-top: 0.15rem;
+		border-top: 1px dashed var(--cs-color-border);
+		color: var(--cs-color-nav-text);
+		font-size: 0.84375rem;
+		line-height: 1.55;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table='stacked']
+		tbody
+		td:nth-child(n + 3):not(:where(.not-content *))::before {
+		content: attr(data-label);
+		display: block;
+		margin-bottom: 0.1rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--cs-color-text-muted);
+	}
+}
+
+/* Aside（コールアウト：フロントの info / success / warning / danger トークンに完全同期） */
+.starlight-aside {
+	border-radius: 0.5rem;
+	border: 1px solid var(--cs-aside-border, var(--cs-color-border));
+	border-inline-start-width: 4px;
+	padding: 0.9375rem 1.125rem;
+	background-color: var(--cs-aside-bg, var(--cs-color-surface-muted));
+	color: var(--cs-color-text);
+}
+
+.starlight-aside--note {
+	--cs-aside-bg: var(--cs-color-info-bg);
+	--cs-aside-border: var(--cs-color-info-border);
+	--sl-color-asides-text-accent: var(--cs-color-info);
+	--sl-color-asides-border: var(--cs-color-info);
+	border-inline-start-color: var(--cs-color-info);
+}
+
+.starlight-aside--tip {
+	--cs-aside-bg: var(--cs-color-success-bg);
+	--cs-aside-border: var(--cs-color-success-border);
+	--sl-color-asides-text-accent: var(--cs-color-success);
+	--sl-color-asides-border: var(--cs-color-success);
+	border-inline-start-color: var(--cs-color-success);
+}
+
+.starlight-aside--caution {
+	--cs-aside-bg: var(--cs-color-warning-bg);
+	--cs-aside-border: var(--cs-color-warning-border);
+	--sl-color-asides-text-accent: var(--cs-color-warning);
+	--sl-color-asides-border: var(--cs-color-warning);
+	border-inline-start-color: var(--cs-color-warning);
+}
+
+.starlight-aside--danger {
+	--cs-aside-bg: var(--cs-color-danger-bg);
+	--cs-aside-border: var(--cs-color-danger-border);
+	--sl-color-asides-text-accent: var(--cs-color-danger);
+	--sl-color-asides-border: var(--cs-color-danger);
+	border-inline-start-color: var(--cs-color-danger);
+}
+
+.starlight-aside__title {
+	font-size: 0.9375rem;
+	font-weight: 700;
+}
+
+.starlight-aside__content {
+	font-size: 0.9375rem;
+}
+
+.starlight-aside__content .expressive-code {
+	margin-block: 0.5rem 0.75rem;
+}
+
+/* 折りたたみ（details / summary：更新系 API 仕様など） */
+.sl-markdown-content details:not(:where(.not-content *)) {
+	border: 1px solid var(--cs-color-border);
+	border-radius: 0.5rem;
+	padding: 0.75rem 1rem;
+	background-color: var(--cs-color-surface-muted);
+	transition: border-color 140ms ease;
+}
+
+.sl-markdown-content details[open]:not(:where(.not-content *)) {
+	background-color: var(--cs-color-surface);
+	padding-bottom: 1rem;
+}
+
+.sl-markdown-content details:not([open]):hover:not(:where(.not-content *)),
+.sl-markdown-content details:has(> summary:hover):not(:where(.not-content *)) {
+	border-color: var(--cs-color-border-strong);
+}
+
+.sl-markdown-content summary:not(:where(.not-content *)) {
+	color: var(--cs-color-text);
+	font-size: 0.875rem;
+	font-weight: 600;
+	margin-inline-start: 0;
+	padding-inline-start: 0;
+}
+
+.sl-markdown-content details[open] > summary:not(:where(.not-content *)) {
+	padding-bottom: 0.625rem;
+	border-bottom: 1px solid var(--cs-color-border);
+	margin-bottom: 1rem;
+}
+
+/* =========================================================================
+ * 10. LinkCard & CardGrid（フロント SelectableCardLink 準拠）
+ * ========================================================================= */
+.card-grid {
+	gap: 0.875rem;
+}
+
+@media (min-width: 50rem) {
+	[data-has-hero] .card-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+	}
+}
+
+.sl-link-card {
+	border: 1px solid var(--cs-color-border) !important;
+	border-radius: 0.5rem !important;
+	padding: 1.125rem 1.25rem !important;
+	background-color: var(--cs-color-surface) !important;
+	box-shadow: none !important;
+	align-items: start;
+	-webkit-tap-highlight-color: transparent;
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease;
+}
+
+.sl-link-card a {
+	-webkit-tap-highlight-color: transparent;
+}
+
+.sl-link-card a:focus-visible {
+	outline: none;
+}
+
+.sl-link-card:has(a:focus-visible) {
+	outline: 2px solid var(--cs-color-focus-ring);
+	outline-offset: 2px;
+}
+
+.sl-link-card .title {
+	color: var(--cs-color-text) !important;
+	font-size: 1rem !important;
+	font-weight: 700 !important;
+	line-height: 1.4;
+}
+
+.sl-link-card .description {
+	color: var(--cs-color-text-muted) !important;
+	font-size: 0.875rem;
+	line-height: 1.6;
+}
+
+.sl-link-card .icon {
+	color: var(--cs-color-text-subtle) !important;
+	margin-top: 0.125rem;
+	transition:
+		color 150ms ease,
+		transform 150ms ease;
+}
+
+.sl-link-card:hover {
+	background-color: var(--cs-color-surface-muted) !important;
+	border-color: var(--cs-color-border-strong) !important;
+}
+
+.sl-link-card:active {
+	background-color: var(--cs-color-surface-hover) !important;
+	border-color: var(--cs-color-border-strong) !important;
+}
+
+.sl-link-card:hover .title,
+.sl-link-card:active .title {
+	color: var(--cs-color-link) !important;
+}
+
+.sl-link-card:hover .icon,
+.sl-link-card:active .icon {
+	color: var(--cs-color-action-primary) !important;
+	transform: translateX(3px);
+}
+
+/* =========================================================================
+ * 11. 前後ページネーション（Pagination）
+ * ========================================================================= */
+.pagination-links {
+	gap: 0.75rem;
+}
+
+.pagination-links a {
+	border: 1px solid var(--cs-color-border) !important;
+	border-radius: 0.5rem !important;
+	padding: 0.875rem 1rem !important;
+	background-color: var(--cs-color-surface) !important;
+	color: var(--cs-color-text-muted) !important;
+	box-shadow: none !important;
+	font-size: 0.75rem;
+	transition:
+		border-color 150ms ease,
+		background-color 150ms ease,
+		color 150ms ease;
+}
+
+.pagination-links a:hover {
+	border-color: var(--cs-color-border-strong) !important;
+	background-color: var(--cs-color-surface-muted) !important;
+}
+
+.pagination-links .link-title {
+	color: var(--cs-color-text) !important;
+	font-size: 0.9375rem !important;
+	font-weight: 700;
+	line-height: 1.35;
+}
+
+.pagination-links a:hover .link-title {
+	color: var(--cs-color-link) !important;
+}
+
+.pagination-links svg {
+	color: var(--cs-color-text-subtle);
+	transition: color 150ms ease;
+}
+
+.pagination-links a:hover svg {
+	color: var(--cs-color-action-primary);
 }

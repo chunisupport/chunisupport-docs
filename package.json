@@ -10,7 +10,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro check && astro build",
-    "test": "node --experimental-strip-types --test src/lib/legacyAnchorRedirect.test.ts",
+    "test": "node --experimental-strip-types --test src/lib/legacyAnchorRedirect.test.ts src/lib/responsiveTables.test.ts",
     "preview": "astro preview",
     "astro": "astro"
   },

@@ -1,7 +1,7 @@
 ---
 /*
- * Starlight の ThemeProvider をオーバーライドし、フロント由来の
- * data-cs-theme（具体テーマ）と data-accent（アクセント）を
+ * Starlight の ThemeProvider をオーバーライドし、ChuniSupport 本体由来の
+ * data-cs-theme（具体テーマ）と data-accent（アクセントカラー）を
  * <head> 内インラインで適用する（FOUC 防止）。
  *
  * data-theme（Starlight の light/dark 基盤）は data-cs-theme から導出する。
@@ -14,8 +14,8 @@
 	window.CsDocsTheme = (() => {
 		const themeKey = 'cs-docs-theme';
 		const accentKey = 'cs-docs-accent';
-		const themes = ['light', 'dark', 'black', 'dark-blue', 'pastel-orange'];
-		const accents = ['green', 'orange', 'blue', 'violet', 'yellow', 'red'];
+		const themes = ['light', 'pastel-orange', 'dark', 'dark-blue', 'black'];
+		const accents = ['red', 'orange', 'yellow', 'green', 'sky-blue', 'blue', 'violet'];
 
 		/** data-cs-theme から Starlight の light/dark 基盤を導出する。 */
 		const baseOf = (theme) => (theme === 'light' || theme === 'pastel-orange' ? 'light' : 'dark');
@@ -45,28 +45,53 @@
 			return accents.includes(stored) ? stored : 'green';
 		};
 
-		/** DOM へテーマ/アクセントを適用する。 */
-		const apply = (theme, accent) => {
+		let currentTheme = loadTheme();
+		let currentAccent = loadAccent();
+
+		const getTheme = () => currentTheme;
+		const getAccent = () => currentAccent;
+
+		/** DOM へテーマ/アクセントを適用し、必要に応じて変更イベントを通知する。 */
+		const apply = (theme, accent, notify = false) => {
+			currentTheme = theme;
+			currentAccent = accent;
 			const root = document.documentElement;
 			root.dataset.csTheme = theme;
 			root.dataset.theme = baseOf(theme);
 			root.dataset.accent = accent;
+			if (notify) {
+				window.dispatchEvent(
+					new CustomEvent('cs-theme-change', { detail: { theme, accent } })
+				);
+			}
 		};
 
 		const setTheme = (theme) => {
 			const next = themes.includes(theme) ? theme : preferredTheme();
 			write(themeKey, next);
-			apply(next, loadAccent());
+			apply(next, currentAccent, true);
 		};
 		const setAccent = (accent) => {
 			const next = accents.includes(accent) ? accent : 'green';
 			write(accentKey, next);
-			apply(loadTheme(), next);
+			apply(currentTheme, next, true);
 		};
 
 		// 初期適用
-		apply(loadTheme(), loadAccent());
+		apply(currentTheme, currentAccent, false);
 
-		return { themeKey, accentKey, themes, accents, baseOf, loadTheme, loadAccent, setTheme, setAccent };
+		return {
+			themeKey,
+			accentKey,
+			themes,
+			accents,
+			baseOf,
+			getTheme,
+			getAccent,
+			loadTheme,
+			loadAccent,
+			setTheme,
+			setAccent,
+		};
 	})();
 </script>

@@ -1,84 +1,139 @@
 ---
 import {
-  PUBLIC_BOOKMARKLET_ENTRYPOINT,
-  PUBLIC_BOOKMARKLET_URL,
+	PUBLIC_BOOKMARKLET_ENTRYPOINT,
+	PUBLIC_BOOKMARKLET_URL,
 } from 'astro:env/server'
 
 const scriptUrl = new URL(PUBLIC_BOOKMARKLET_ENTRYPOINT, PUBLIC_BOOKMARKLET_URL)
 const bookmarklet = `javascript:(function(){var e=document.createElement("script");e.src="${scriptUrl}";document.body.appendChild(e)})();`
 ---
 
-<div class="bookmarklet" data-bookmarklet>
-  <code data-bookmarklet-value>{bookmarklet}</code>
-  <div class="bookmarklet__actions">
-    <button type="button" data-bookmarklet-copy>コピー</button>
-    <span class="bookmarklet__status" role="status" aria-live="polite"></span>
-  </div>
+<div class="bookmarklet not-content" data-bookmarklet>
+	<div class="bookmarklet__header">
+		<span class="bookmarklet__label">ブックマークレット</span>
+	</div>
+	<code class="bookmarklet__code" data-bookmarklet-value>{bookmarklet}</code>
+	<div class="bookmarklet__actions">
+		<button type="button" class="bookmarklet__button" data-bookmarklet-copy>
+			<svg
+				viewBox="0 0 24 24"
+				width="15"
+				height="15"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+				<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+			</svg>
+			<span>コピー</span>
+		</button>
+		<span class="bookmarklet__status" role="status" aria-live="polite"></span>
+	</div>
 </div>
 
 <script>
-  for (const container of document.querySelectorAll<HTMLElement>('[data-bookmarklet]')) {
-    const value = container.querySelector<HTMLElement>('[data-bookmarklet-value]')
-    const button = container.querySelector<HTMLButtonElement>('[data-bookmarklet-copy]')
-    const status = container.querySelector<HTMLElement>('.bookmarklet__status')
+	for (const container of document.querySelectorAll<HTMLElement>('[data-bookmarklet]')) {
+		const value = container.querySelector<HTMLElement>('[data-bookmarklet-value]')
+		const button = container.querySelector<HTMLButtonElement>('[data-bookmarklet-copy]')
+		const status = container.querySelector<HTMLElement>('.bookmarklet__status')
 
-    button?.addEventListener('click', async () => {
-      if (!value || !status) return
+		button?.addEventListener('click', async () => {
+			if (!value || !status) return
 
-      try {
-        await navigator.clipboard.writeText(value.textContent ?? '')
-        status.textContent = 'コピーしました'
-      } catch {
-        status.textContent = 'コピーに失敗しました。手動でコピーしてください。'
-      }
-    })
-  }
+			try {
+				await navigator.clipboard.writeText(value.textContent ?? '')
+				status.textContent = 'コピーしました'
+				status.dataset.state = 'success'
+			} catch {
+				status.textContent = 'コピーに失敗しました。手動でコピーしてください。'
+				status.dataset.state = 'error'
+			}
+		})
+	}
 </script>
 
 <style>
-  .bookmarklet {
-    margin-block: 1rem;
-    padding: 1rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
-    background: var(--sl-color-gray-6);
-  }
+	.bookmarklet {
+		margin-block: 1.25rem;
+		padding: 1rem 1.125rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface-muted);
+	}
 
-  code {
-    display: block;
-    overflow-wrap: anywhere;
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    background: var(--sl-color-black);
-    font-size: var(--sl-text-xs);
-    line-height: 1.6;
-  }
+	.bookmarklet__header {
+		margin-bottom: 0.5rem;
+	}
 
-  .bookmarklet__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
-  }
+	.bookmarklet__label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		color: var(--cs-color-text-muted);
+	}
 
-  button {
-    padding: 0.5rem 0.875rem;
-    border: 0;
-    border-radius: 0.375rem;
-    background: var(--sl-color-accent-high);
-    color: var(--sl-color-black);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
+	.bookmarklet__code {
+		display: block;
+		overflow-wrap: anywhere;
+		padding: 0.75rem 0.875rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-input-bg);
+		color: var(--cs-color-text);
+		font-family: var(--cs-font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.6;
+	}
 
-  button:hover {
-    background: var(--sl-color-accent);
-  }
+	.bookmarklet__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.875rem;
+	}
 
-  .bookmarklet__status {
-    color: var(--sl-color-gray-2);
-    font-size: var(--sl-text-sm);
-  }
+	.bookmarklet__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		min-height: 2.25rem;
+		padding: 0.4375rem 0.9375rem;
+		border: 1px solid var(--cs-color-action-primary);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-action-primary);
+		color: var(--cs-color-text-inverse);
+		font: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease;
+	}
+
+	.bookmarklet__button:hover {
+		background-color: var(--cs-color-action-primary-hover);
+		border-color: var(--cs-color-action-primary-hover);
+	}
+
+	.bookmarklet__status {
+		color: var(--cs-color-text-muted);
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+
+	.bookmarklet__status[data-state='success'] {
+		color: var(--cs-color-success);
+	}
+
+	.bookmarklet__status[data-state='error'] {
+		color: var(--cs-color-danger);
+	}
 </style>
