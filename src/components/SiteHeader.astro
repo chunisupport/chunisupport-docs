@@ -1,0 +1,198 @@
+---
+/*
+ * Starlight の Header をオーバーライドし、ChuniSupport 本体と調和する
+ * セクションナビゲーション・検索・外観設定・本体リンクを一体で提供する。
+ */
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteTitle from './SiteTitle.astro';
+import ThemeSelect from './ThemeSelect.astro';
+import { PUBLIC_APP_URL } from 'astro:env/server';
+
+const shouldRenderSearch = true;
+
+const pathname = Astro.url.pathname;
+
+const navLinks = [
+	{ href: '/help/', label: 'ヘルプ', prefix: '/help' },
+	{ href: '/announcements/', label: 'お知らせ', prefix: '/announcements' },
+	{ href: '/api/', label: 'API', prefix: '/api' },
+] as const;
+
+const isActiveSection = (prefix: string) =>
+	pathname === prefix || pathname.startsWith(`${prefix}/`);
+---
+
+<div class="cs-header">
+	<div class="cs-header__left">
+		<div class="cs-header__title">
+			<SiteTitle />
+		</div>
+		<nav class="cs-header__nav" aria-label="主要セクション">
+			{
+				navLinks.map(({ href, label, prefix }) => (
+					<a
+						href={href}
+						class="cs-header__nav-link"
+						aria-current={isActiveSection(prefix) ? 'page' : undefined}
+					>
+						{label}
+					</a>
+				))
+			}
+		</nav>
+	</div>
+
+	<div class="cs-header__right print:hidden">
+		{
+			shouldRenderSearch && (
+				<div class="cs-header__search">
+					<Search />
+				</div>
+			)
+		}
+		<div class="cs-header__controls">
+			<ThemeSelect />
+			<a
+				href={PUBLIC_APP_URL}
+				class="cs-header__app-link"
+				target="_blank"
+				rel="noopener noreferrer"
+				title="ChuniSupportを開く"
+			>
+				<span class="cs-header__app-link-text">ChuniSupport</span>
+				<svg
+					viewBox="0 0 24 24"
+					width="14"
+					height="14"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M15 3h6v6" />
+					<path d="M10 14 21 3" />
+					<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+				</svg>
+			</a>
+		</div>
+	</div>
+</div>
+
+<style>
+	.cs-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		height: 100%;
+		min-width: 0;
+	}
+
+	.cs-header__left {
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+		min-width: 0;
+	}
+
+	.cs-header__title {
+		display: flex;
+		align-items: center;
+		min-width: 0;
+		flex-shrink: 0;
+	}
+
+	.cs-header__nav {
+		display: none;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	@media (min-width: 50rem) {
+		.cs-header__nav {
+			display: flex;
+		}
+	}
+
+	.cs-header__nav-link {
+		display: inline-flex;
+		align-items: center;
+		height: 2.125rem;
+		padding: 0 0.75rem;
+		border-radius: 0.375rem;
+		color: var(--cs-color-nav-text);
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			background-color 150ms ease,
+			color 150ms ease;
+	}
+
+	.cs-header__nav-link:hover {
+		background-color: var(--cs-color-surface-hover);
+		color: var(--cs-color-text);
+	}
+
+	.cs-header__nav-link[aria-current='page'] {
+		background-color: var(--cs-color-action-primary-muted);
+		color: var(--cs-color-link);
+	}
+
+	.cs-header__right {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+		margin-inline-start: auto;
+	}
+
+	.cs-header__search {
+		display: flex;
+		align-items: center;
+		min-width: 0;
+	}
+
+	.cs-header__controls {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex-shrink: 0;
+	}
+
+	.cs-header__app-link {
+		display: none;
+		align-items: center;
+		gap: 0.375rem;
+		height: 2.25rem;
+		padding: 0 0.75rem;
+		border: 1px solid var(--cs-color-border-strong);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-surface);
+		color: var(--cs-color-text);
+		font-family: var(--cs-font-display);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+
+	.cs-header__app-link:hover {
+		background-color: var(--cs-color-surface-muted);
+		border-color: var(--cs-color-action-primary);
+		color: var(--cs-color-link);
+	}
+
+	@media (min-width: 58rem) {
+		.cs-header__app-link {
+			display: inline-flex;
+		}
+	}
+</style>

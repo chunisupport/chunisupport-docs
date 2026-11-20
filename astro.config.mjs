@@ -53,10 +53,38 @@ export default defineConfig({
                     lang: 'ja',
                 },
             },
+            head: [
+                {
+                    tag: 'link',
+                    attrs: {
+                        rel: 'preconnect',
+                        href: 'https://fonts.googleapis.com',
+                    },
+                },
+                {
+                    tag: 'link',
+                    attrs: {
+                        rel: 'preconnect',
+                        href: 'https://fonts.gstatic.com',
+                        crossorigin: true,
+                    },
+                },
+                {
+                    tag: 'link',
+                    attrs: {
+                        rel: 'stylesheet',
+                        href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..600&family=Jost:wght@500..700&family=Noto+Sans:wght@400..700&family=Noto+Sans+JP:wght@400..700&display=swap',
+                    },
+                },
+            ],
             customCss: ['./src/styles/custom.css'],
             components: {
                 Footer: './src/components/SiteFooter.astro',
+                Header: './src/components/SiteHeader.astro',
+                Hero: './src/components/SiteHero.astro',
+                MobileMenuFooter: './src/components/MobileMenuFooter.astro',
                 Sidebar: './src/components/SectionSidebar.astro',
+                SiteTitle: './src/components/SiteTitle.astro',
                 ThemeProvider: './src/components/ThemeProvider.astro',
                 ThemeSelect: './src/components/ThemeSelect.astro',
             },

@@ -1,0 +1,101 @@
+---
+/*
+ * Starlight の SiteTitle をオーバーライドし、ChuniSupport 本体のロゴマーク
+ * （logo-single.svg を CSS マスクで描画）とブランド表記を表示する。
+ */
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="cs-site-title" aria-label="ChuniSupport ガイド トップページ">
+	<span class="cs-site-title__emblem" aria-hidden="true">
+		<span class="cs-site-title__logo-mask"></span>
+	</span>
+	<span class="cs-site-title__text" translate="no">
+		<span class="cs-site-title__brand">ChuniSupport</span>
+		<span class="cs-site-title__badge">ガイド</span>
+	</span>
+</a>
+
+<style>
+	.cs-site-title {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.625rem;
+		color: var(--cs-color-text);
+		text-decoration: none;
+		white-space: nowrap;
+		min-width: 0;
+		border-radius: 0.375rem;
+		padding: 0.125rem 0.25rem;
+		margin-inline-start: -0.25rem;
+		transition: opacity 150ms ease;
+	}
+
+	.cs-site-title:hover {
+		opacity: 0.88;
+	}
+
+	.cs-site-title__emblem {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.875rem;
+		height: 1.875rem;
+		border-radius: 0.4375rem;
+		border: 1px solid var(--cs-color-action-primary-border);
+		background-color: var(--cs-color-action-primary-muted);
+		flex-shrink: 0;
+	}
+
+	.cs-site-title__logo-mask {
+		display: block;
+		width: 1.25rem;
+		height: 1.25rem;
+		background-color: var(--cs-color-action-primary);
+		-webkit-mask-image: url('/logo-single.svg');
+		mask-image: url('/logo-single.svg');
+		-webkit-mask-position: center;
+		mask-position: center;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-size: contain;
+		mask-size: contain;
+	}
+
+	.cs-site-title__text {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		min-width: 0;
+	}
+
+	.cs-site-title__brand {
+		font-family: var(--cs-font-display);
+		font-size: 1.0625rem;
+		font-weight: 700;
+		letter-spacing: 0.01em;
+		color: var(--cs-color-text);
+		line-height: 1;
+	}
+
+	.cs-site-title__badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.175rem 0.45rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.25rem;
+		background-color: var(--cs-color-surface-muted);
+		color: var(--cs-color-text-muted);
+		font-family: var(--cs-font-sans);
+		font-size: 0.6875rem;
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: 0.02em;
+	}
+
+	@media (max-width: 32rem) {
+		.cs-site-title__badge {
+			display: none;
+		}
+	}
+</style>
