@@ -1414,9 +1414,23 @@ h1#_top:not(.cs-hero h1) {
 	background-color: var(--cs-color-surface) !important;
 	box-shadow: none !important;
 	align-items: start;
+	-webkit-tap-highlight-color: transparent;
 	transition:
 		border-color 150ms ease,
 		background-color 150ms ease;
+}
+
+.sl-link-card a {
+	-webkit-tap-highlight-color: transparent;
+}
+
+.sl-link-card a:focus-visible {
+	outline: none;
+}
+
+.sl-link-card:has(a:focus-visible) {
+	outline: 2px solid var(--cs-color-focus-ring);
+	outline-offset: 2px;
 }
 
 .sl-link-card .title {
@@ -1445,11 +1459,18 @@ h1#_top:not(.cs-hero h1) {
 	border-color: var(--cs-color-border-strong) !important;
 }
 
-.sl-link-card:hover .title {
+.sl-link-card:active {
+	background-color: var(--cs-color-surface-hover) !important;
+	border-color: var(--cs-color-border-strong) !important;
+}
+
+.sl-link-card:hover .title,
+.sl-link-card:active .title {
 	color: var(--cs-color-link) !important;
 }
 
-.sl-link-card:hover .icon {
+.sl-link-card:hover .icon,
+.sl-link-card:active .icon {
 	color: var(--cs-color-action-primary) !important;
 	transform: translateX(3px);
 }
