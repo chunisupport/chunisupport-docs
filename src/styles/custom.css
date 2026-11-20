@@ -1068,6 +1068,11 @@ h1#_top:not(.cs-hero h1) {
 		display: none;
 	}
 
+	/* Starlight の隣接兄弟 margin-top (--sl-content-gap-y) が flex/block 化した tr/td に効くのを防ぐ */
+	.sl-markdown-content table[data-cs-table] :is(tbody, tr, td):not(:where(.not-content *)) {
+		margin-top: 0;
+	}
+
 	.sl-markdown-content table[data-cs-table] tbody:not(:where(.not-content *)) {
 		display: block;
 		border: 1px solid var(--cs-color-border);
@@ -1080,8 +1085,8 @@ h1#_top:not(.cs-hero h1) {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.375rem 0.5rem;
-		padding: 0.75rem 0.875rem;
+		gap: 0.25rem 0.5rem;
+		padding: 0.5625rem 0.75rem;
 		border-bottom: 1px solid var(--cs-color-border);
 	}
 
@@ -1089,12 +1094,14 @@ h1#_top:not(.cs-hero h1) {
 		border-bottom: 0;
 	}
 
-	.sl-markdown-content table[data-cs-table] tbody tr:hover:not(:where(.not-content *)) {
-		background-color: var(--cs-color-surface-muted);
-	}
-
 	.sl-markdown-content table[data-cs-table] tbody tr:hover td:not(:where(.not-content *)) {
 		background-color: transparent;
+	}
+
+	@media (hover: hover) {
+		.sl-markdown-content table[data-cs-table] tbody tr:hover:not(:where(.not-content *)) {
+			background-color: var(--cs-color-surface-muted);
+		}
 	}
 
 	.sl-markdown-content table[data-cs-table] tbody td:not(:where(.not-content *)) {
@@ -1108,13 +1115,17 @@ h1#_top:not(.cs-hero h1) {
 	}
 
 	.sl-markdown-content table[data-cs-table] tbody td code:not(:where(.not-content *)) {
+		margin-block: 0;
 		overflow-wrap: anywhere;
 	}
 
 	/* 1 列目：フィールド名・コード名・項目名 */
 	.sl-markdown-content table[data-cs-table] tbody td:nth-child(1):not(:where(.not-content *)) {
+		display: inline-flex;
+		align-items: center;
 		font-weight: 600;
 		color: var(--cs-color-text);
+		line-height: 1.4;
 		max-width: 100%;
 	}
 
@@ -1130,14 +1141,14 @@ h1#_top:not(.cs-hero h1) {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
-		padding: 0.1rem 0.45rem;
+		padding: 0.1rem 0.4rem;
 		border: 1px solid var(--cs-color-border);
 		border-radius: 0.25rem;
 		background-color: var(--cs-color-surface-muted);
 		color: var(--cs-color-text-muted);
 		font-family: var(--cs-font-mono);
 		font-size: 0.75rem;
-		line-height: 1.4;
+		line-height: 1.35;
 	}
 
 	.sl-markdown-content
@@ -1173,13 +1184,13 @@ h1#_top:not(.cs-hero h1) {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.2rem;
-		padding: 0.1rem 0.45rem;
+		padding: 0.1rem 0.4rem;
 		border: 1px solid var(--cs-color-border);
 		border-radius: 0.25rem;
 		background-color: var(--cs-color-surface-muted);
 		color: var(--cs-color-text-muted);
 		font-size: 0.75rem;
-		line-height: 1.4;
+		line-height: 1.35;
 	}
 
 	.sl-markdown-content
@@ -1190,7 +1201,7 @@ h1#_top:not(.cs-hero h1) {
 		color: var(--cs-color-text-subtle);
 	}
 
-	/* 説明欄（横幅 100% を確保して読みやすく表示） */
+	/* 説明欄（横幅 100% を確保してコンパクトに表示） */
 	.sl-markdown-content
 		:is(
 			table[data-cs-table='spec-3'] tbody td:nth-child(3),
@@ -1199,20 +1210,20 @@ h1#_top:not(.cs-hero h1) {
 		flex: 1 0 100%;
 		margin-top: 0.125rem;
 		color: var(--cs-color-nav-text);
-		font-size: 0.875rem;
-		line-height: 1.65;
+		font-size: 0.84375rem;
+		line-height: 1.55;
 	}
 
 	/* 2 列テーブル（目的 / エンドポイント、レートリミット等） */
 	.sl-markdown-content table[data-cs-table='pair'] tbody tr:not(:where(.not-content *)) {
 		justify-content: space-between;
 		align-items: baseline;
-		gap: 0.375rem 0.75rem;
+		gap: 0.25rem 0.75rem;
 	}
 
 	.sl-markdown-content table[data-cs-table='pair'] tbody td:nth-child(2):not(:where(.not-content *)) {
 		color: var(--cs-color-nav-text);
-		font-size: 0.875rem;
+		font-size: 0.84375rem;
 	}
 
 	/* 比較テーブル（通常楽曲 / WORLD'S END 等）：各列をラベル付きで縦積み */
@@ -1222,12 +1233,12 @@ h1#_top:not(.cs-hero h1) {
 		td:nth-child(n + 3):not(:where(.not-content *)) {
 		flex: 1 0 100%;
 		display: block;
-		padding-top: 0.375rem;
-		margin-top: 0.125rem;
+		padding-top: 0.3rem;
+		margin-top: 0.15rem;
 		border-top: 1px dashed var(--cs-color-border);
 		color: var(--cs-color-nav-text);
-		font-size: 0.875rem;
-		line-height: 1.6;
+		font-size: 0.84375rem;
+		line-height: 1.55;
 	}
 
 	.sl-markdown-content
@@ -1236,7 +1247,7 @@ h1#_top:not(.cs-hero h1) {
 		td:nth-child(n + 3):not(:where(.not-content *))::before {
 		content: attr(data-label);
 		display: block;
-		margin-bottom: 0.15rem;
+		margin-bottom: 0.1rem;
 		font-size: 0.72rem;
 		font-weight: 700;
 		color: var(--cs-color-text-muted);
