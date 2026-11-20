@@ -1043,10 +1043,204 @@ h1#_top:not(.cs-hero h1) {
 	background-color: var(--cs-color-surface-muted);
 }
 
-/* 型・HTTP ステータス列（2 列目）の折り返し防止を維持 */
-table td:nth-child(2),
-table th:nth-child(2) {
-	white-space: nowrap;
+/* デスクトップ以上：型・HTTP 列の折り返し防止と説明欄の最小幅確保 */
+@media (min-width: 44rem) {
+	table td:nth-child(2),
+	table th:nth-child(2) {
+		white-space: nowrap;
+	}
+
+	.sl-markdown-content table[data-cs-table='spec-3'] td:nth-child(3):not(:where(.not-content *)),
+	.sl-markdown-content table[data-cs-table='spec-4'] td:nth-child(4):not(:where(.not-content *)) {
+		min-width: 15rem;
+	}
+}
+
+/* モバイル（44rem 未満）：横スクロール不要のコンパクトなカード型リストへ変換 */
+@media (max-width: 43.99rem) {
+	.sl-markdown-content table[data-cs-table]:not(:where(.not-content *)) {
+		display: block;
+		overflow: visible;
+		width: 100%;
+	}
+
+	.sl-markdown-content table[data-cs-table] thead:not(:where(.not-content *)) {
+		display: none;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody:not(:where(.not-content *)) {
+		display: block;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface);
+		overflow: hidden;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:not(:where(.not-content *)) {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.375rem 0.5rem;
+		padding: 0.75rem 0.875rem;
+		border-bottom: 1px solid var(--cs-color-border);
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:last-child:not(:where(.not-content *)) {
+		border-bottom: 0;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:hover:not(:where(.not-content *)) {
+		background-color: var(--cs-color-surface-muted);
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody tr:hover td:not(:where(.not-content *)) {
+		background-color: transparent;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody td:not(:where(.not-content *)) {
+		display: block;
+		border: 0;
+		border-radius: 0;
+		padding: 0;
+		white-space: normal;
+		overflow-wrap: anywhere;
+		min-width: 0;
+	}
+
+	.sl-markdown-content table[data-cs-table] tbody td code:not(:where(.not-content *)) {
+		overflow-wrap: anywhere;
+	}
+
+	/* 1 列目：フィールド名・コード名・項目名 */
+	.sl-markdown-content table[data-cs-table] tbody td:nth-child(1):not(:where(.not-content *)) {
+		font-weight: 600;
+		color: var(--cs-color-text);
+		max-width: 100%;
+	}
+
+	/* 説明付き 3 列 / 4 列・比較テーブルの 2 列目（型・HTTP 等のメタバッジ） */
+	.sl-markdown-content
+		:is(
+			table[data-cs-table='spec-3'],
+			table[data-cs-table='spec-4'],
+			table[data-cs-table='stacked']
+		)
+		tbody
+		td:nth-child(2):not(:where(.not-content *)) {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.1rem 0.45rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.25rem;
+		background-color: var(--cs-color-surface-muted);
+		color: var(--cs-color-text-muted);
+		font-family: var(--cs-font-mono);
+		font-size: 0.75rem;
+		line-height: 1.4;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table]
+		tbody
+		td:nth-child(2)[data-label='HTTP']:not(:where(.not-content *))::before {
+		content: 'HTTP ';
+		color: var(--cs-color-text-subtle);
+	}
+
+	/* 2 列目の中身自体が code 要素のときは二重枠を避ける */
+	.sl-markdown-content
+		table[data-cs-table]
+		tbody
+		td:nth-child(2):has(> code):not(:where(.not-content *)) {
+		padding: 0;
+		border: 0;
+		background-color: transparent;
+	}
+
+	/* 4 列テーブルの 3 列目（必須など。空セルは表示しない） */
+	.sl-markdown-content
+		table[data-cs-table='spec-4']
+		tbody
+		td:nth-child(3):empty:not(:where(.not-content *)) {
+		display: none;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table='spec-4']
+		tbody
+		td:nth-child(3):not(:empty):not(:where(.not-content *)) {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		padding: 0.1rem 0.45rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.25rem;
+		background-color: var(--cs-color-surface-muted);
+		color: var(--cs-color-text-muted);
+		font-size: 0.75rem;
+		line-height: 1.4;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table='spec-4']
+		tbody
+		td:nth-child(3):not(:empty):not(:where(.not-content *))::before {
+		content: attr(data-label) ': ';
+		color: var(--cs-color-text-subtle);
+	}
+
+	/* 説明欄（横幅 100% を確保して読みやすく表示） */
+	.sl-markdown-content
+		:is(
+			table[data-cs-table='spec-3'] tbody td:nth-child(3),
+			table[data-cs-table='spec-4'] tbody td:nth-child(4)
+		):not(:where(.not-content *)) {
+		flex: 1 0 100%;
+		margin-top: 0.125rem;
+		color: var(--cs-color-nav-text);
+		font-size: 0.875rem;
+		line-height: 1.65;
+	}
+
+	/* 2 列テーブル（目的 / エンドポイント、レートリミット等） */
+	.sl-markdown-content table[data-cs-table='pair'] tbody tr:not(:where(.not-content *)) {
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.375rem 0.75rem;
+	}
+
+	.sl-markdown-content table[data-cs-table='pair'] tbody td:nth-child(2):not(:where(.not-content *)) {
+		color: var(--cs-color-nav-text);
+		font-size: 0.875rem;
+	}
+
+	/* 比較テーブル（通常楽曲 / WORLD'S END 等）：各列をラベル付きで縦積み */
+	.sl-markdown-content
+		table[data-cs-table='stacked']
+		tbody
+		td:nth-child(n + 3):not(:where(.not-content *)) {
+		flex: 1 0 100%;
+		display: block;
+		padding-top: 0.375rem;
+		margin-top: 0.125rem;
+		border-top: 1px dashed var(--cs-color-border);
+		color: var(--cs-color-nav-text);
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+
+	.sl-markdown-content
+		table[data-cs-table='stacked']
+		tbody
+		td:nth-child(n + 3):not(:where(.not-content *))::before {
+		content: attr(data-label);
+		display: block;
+		margin-bottom: 0.15rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		color: var(--cs-color-text-muted);
+	}
 }
 
 /* Aside（コールアウト：フロントの info / success / warning / danger トークンに完全同期） */
