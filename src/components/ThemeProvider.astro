@@ -45,8 +45,16 @@
 			return accents.includes(stored) ? stored : 'green';
 		};
 
+		let currentTheme = loadTheme();
+		let currentAccent = loadAccent();
+
+		const getTheme = () => currentTheme;
+		const getAccent = () => currentAccent;
+
 		/** DOM へテーマ/アクセントを適用し、必要に応じて変更イベントを通知する。 */
 		const apply = (theme, accent, notify = false) => {
+			currentTheme = theme;
+			currentAccent = accent;
 			const root = document.documentElement;
 			root.dataset.csTheme = theme;
 			root.dataset.theme = baseOf(theme);
@@ -61,16 +69,16 @@
 		const setTheme = (theme) => {
 			const next = themes.includes(theme) ? theme : preferredTheme();
 			write(themeKey, next);
-			apply(next, loadAccent(), true);
+			apply(next, currentAccent, true);
 		};
 		const setAccent = (accent) => {
 			const next = accents.includes(accent) ? accent : 'green';
 			write(accentKey, next);
-			apply(loadTheme(), next, true);
+			apply(currentTheme, next, true);
 		};
 
 		// 初期適用
-		apply(loadTheme(), loadAccent(), false);
+		apply(currentTheme, currentAccent, false);
 
 		return {
 			themeKey,
@@ -78,6 +86,8 @@
 			themes,
 			accents,
 			baseOf,
+			getTheme,
+			getAccent,
 			loadTheme,
 			loadAccent,
 			setTheme,

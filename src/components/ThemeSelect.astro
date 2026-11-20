@@ -385,6 +385,8 @@ const ACCENT_OPTIONS = [
 
 <script>
 	interface CsDocsThemeApi {
+		getTheme?: () => string;
+		getAccent?: () => string;
 		loadTheme: () => string;
 		loadAccent: () => string;
 		setTheme: (theme: string) => void;
@@ -411,23 +413,65 @@ const ACCENT_OPTIONS = [
 			const themeLabelEl = this.querySelector<HTMLElement>('[data-current-theme-label]');
 			const accentLabelEl = this.querySelector<HTMLElement>('[data-current-accent-label]');
 
-			const syncState = () => {
-				const currentTheme = api.loadTheme();
-				const currentAccent = api.loadAccent();
-
-				for (const btn of themeButtons) {
-					const active = btn.dataset.themeOption === currentTheme;
+			const updateRadioGroup = (
+				buttons: HTMLButtonElement[],
+				activeValue: string,
+				optionKey: 'themeOption' | 'accentOption',
+				labelEl: HTMLElement | null
+			) => {
+				let matched = false;
+				for (const btn of buttons) {
+					const active = btn.dataset[optionKey] === activeValue;
+					if (active) matched = true;
 					btn.setAttribute('aria-checked', String(active));
-					if (active && themeLabelEl) {
-						themeLabelEl.textContent = btn.dataset.optionLabel ?? currentTheme;
+					btn.tabIndex = active ? 0 : -1;
+					if (active && labelEl) {
+						labelEl.textContent = btn.dataset.optionLabel ?? activeValue;
 					}
 				}
-				for (const btn of accentButtons) {
-					const active = btn.dataset.accentOption === currentAccent;
-					btn.setAttribute('aria-checked', String(active));
-					if (active && accentLabelEl) {
-						accentLabelEl.textContent = btn.dataset.optionLabel ?? currentAccent;
-					}
+				if (!matched && buttons[0]) {
+					buttons[0].tabIndex = 0;
+				}
+			};
+
+			const syncState = () => {
+				const currentTheme = api.getTheme ? api.getTheme() : api.loadTheme();
+				const currentAccent = api.getAccent ? api.getAccent() : api.loadAccent();
+
+				updateRadioGroup(themeButtons, currentTheme, 'themeOption', themeLabelEl);
+				updateRadioGroup(accentButtons, currentAccent, 'accentOption', accentLabelEl);
+			};
+
+			const bindRadioGroup = (
+				buttons: HTMLButtonElement[],
+				optionKey: 'themeOption' | 'accentOption',
+				onSelect: (value: string) => void
+			) => {
+				for (const [index, btn] of buttons.entries()) {
+					btn.addEventListener('click', () => {
+						const value = btn.dataset[optionKey];
+						if (value) onSelect(value);
+					});
+
+					btn.addEventListener('keydown', (e) => {
+						let nextIndex: number | null = null;
+						if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+							nextIndex = (index + 1) % buttons.length;
+						} else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+							nextIndex = (index - 1 + buttons.length) % buttons.length;
+						} else if (e.key === 'Home') {
+							nextIndex = 0;
+						} else if (e.key === 'End') {
+							nextIndex = buttons.length - 1;
+						}
+						if (nextIndex === null) return;
+
+						e.preventDefault();
+						const target = buttons[nextIndex];
+						const value = target?.dataset[optionKey];
+						if (value) onSelect(value);
+						target?.focus();
+					});
 				}
 			};
 
@@ -439,25 +483,13 @@ const ACCENT_OPTIONS = [
 
 			syncState();
 
-			trigger?.addEventListener('click', (e) => {
-				e.stopPropagation();
+			trigger?.addEventListener('click', () => {
 				const isOpen = trigger.getAttribute('aria-expanded') === 'true';
 				setOpen(!isOpen);
 			});
 
-			for (const btn of themeButtons) {
-				btn.addEventListener('click', () => {
-					const value = btn.dataset.themeOption;
-					if (value) api.setTheme(value);
-				});
-			}
-
-			for (const btn of accentButtons) {
-				btn.addEventListener('click', () => {
-					const value = btn.dataset.accentOption;
-					if (value) api.setAccent(value);
-				});
-			}
+			bindRadioGroup(themeButtons, 'themeOption', (value) => api.setTheme(value));
+			bindRadioGroup(accentButtons, 'accentOption', (value) => api.setAccent(value));
 
 			if (trigger && panel) {
 				this.handleDocumentClick = (e: MouseEvent) => {

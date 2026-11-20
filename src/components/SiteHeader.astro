@@ -2,6 +2,8 @@
 /*
  * Starlight の Header をオーバーライドし、ChuniSupport 本体と調和する
  * セクションナビゲーション・検索・外観設定・本体リンクを一体で提供する。
+ * サイドバーを持たないページ（お知らせ・利用規約・トップ等）でもモバイル幅で
+ * 各セクションへ移動できるよう、専用のモバイルナビメニューを備える。
  */
 import Search from '@astrojs/starlight/components/Search.astro';
 import SiteTitle from './SiteTitle.astro';
@@ -9,7 +11,7 @@ import ThemeSelect from './ThemeSelect.astro';
 import { PUBLIC_APP_URL } from 'astro:env/server';
 
 const shouldRenderSearch = true;
-
+const { hasSidebar } = Astro.locals.starlightRoute;
 const pathname = Astro.url.pathname;
 
 const navLinks = [
@@ -76,6 +78,100 @@ const isActiveSection = (prefix: string) =>
 					<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
 				</svg>
 			</a>
+			{
+				!hasSidebar && (
+					<cs-mobile-nav class="cs-header__mobile-nav">
+						<button
+							type="button"
+							class="cs-header__mobile-nav-trigger"
+							data-mobile-nav-trigger
+							aria-expanded="false"
+							aria-controls="cs-mobile-nav-panel"
+							aria-label="セクションメニューを開く"
+						>
+							<svg
+								class="cs-header__mobile-nav-open"
+								viewBox="0 0 24 24"
+								width="18"
+								height="18"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<line x1="4" x2="20" y1="6" y2="6" />
+								<line x1="4" x2="20" y1="12" y2="12" />
+								<line x1="4" x2="20" y1="18" y2="18" />
+							</svg>
+							<svg
+								class="cs-header__mobile-nav-close"
+								viewBox="0 0 24 24"
+								width="18"
+								height="18"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M18 6 6 18" />
+								<path d="m6 6 12 12" />
+							</svg>
+						</button>
+						<nav
+							id="cs-mobile-nav-panel"
+							class="cs-header__mobile-nav-panel"
+							data-mobile-nav-panel
+							aria-label="主要セクション"
+							hidden
+						>
+							<ul>
+								<li>
+									<a href="/" aria-current={pathname === '/' ? 'page' : undefined}>
+										トップ
+									</a>
+								</li>
+								{navLinks.map(({ href, label, prefix }) => (
+									<li>
+										<a href={href} aria-current={isActiveSection(prefix) ? 'page' : undefined}>
+											{label}
+										</a>
+									</li>
+								))}
+								<li class="cs-header__mobile-nav-divider" aria-hidden="true" />
+								<li>
+									<a
+										href={PUBLIC_APP_URL}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="cs-header__mobile-nav-external"
+									>
+										<span>ChuniSupportを開く</span>
+										<svg
+											viewBox="0 0 24 24"
+											width="14"
+											height="14"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											aria-hidden="true"
+										>
+											<path d="M15 3h6v6" />
+											<path d="M10 14 21 3" />
+											<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+										</svg>
+									</a>
+								</li>
+							</ul>
+						</nav>
+					</cs-mobile-nav>
+				)
+			}
 		</div>
 	</div>
 </div>
@@ -195,4 +291,168 @@ const isActiveSection = (prefix: string) =>
 			display: inline-flex;
 		}
 	}
+
+	/* サイドバーなしページ向けのモバイルセクションメニュー */
+	.cs-header__mobile-nav {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	@media (min-width: 50rem) {
+		.cs-header__mobile-nav {
+			display: none;
+		}
+	}
+
+	.cs-header__mobile-nav-trigger {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		padding: 0;
+		border: 1px solid var(--cs-color-border-strong);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-surface);
+		color: var(--cs-color-nav-text);
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease,
+			color 150ms ease;
+	}
+
+	.cs-header__mobile-nav-trigger:hover {
+		background-color: var(--cs-color-surface-hover);
+		color: var(--cs-color-text);
+	}
+
+	.cs-header__mobile-nav-trigger[aria-expanded='true'] {
+		background-color: var(--cs-color-action-primary-muted);
+		border-color: var(--cs-color-action-primary);
+		color: var(--cs-color-link);
+	}
+
+	.cs-header__mobile-nav-trigger[aria-expanded='false'] .cs-header__mobile-nav-close,
+	.cs-header__mobile-nav-trigger[aria-expanded='true'] .cs-header__mobile-nav-open {
+		display: none;
+	}
+
+	.cs-header__mobile-nav-panel {
+		position: absolute;
+		top: calc(100% + 0.5rem);
+		inset-inline-end: 0;
+		z-index: 50;
+		width: min(14.5rem, calc(100vw - 1.5rem));
+		padding: 0.5rem;
+		border: 1px solid var(--cs-color-border-strong);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface);
+		box-shadow:
+			0 10px 25px -5px rgb(0 0 0 / 22%),
+			0 4px 10px -4px rgb(0 0 0 / 15%);
+	}
+
+	.cs-header__mobile-nav-panel[hidden] {
+		display: none;
+	}
+
+	.cs-header__mobile-nav-panel ul {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.cs-header__mobile-nav-panel a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.5rem 0.625rem;
+		border-radius: 0.375rem;
+		color: var(--cs-color-nav-text);
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			background-color 140ms ease,
+			color 140ms ease;
+	}
+
+	.cs-header__mobile-nav-panel a:hover {
+		background-color: var(--cs-color-surface-hover);
+		color: var(--cs-color-text);
+	}
+
+	.cs-header__mobile-nav-panel a[aria-current='page'] {
+		background-color: var(--cs-color-action-primary-muted);
+		color: var(--cs-color-link);
+	}
+
+	.cs-header__mobile-nav-divider {
+		height: 1px;
+		margin: 0.25rem 0;
+		background-color: var(--cs-color-border);
+	}
+
+	.cs-header__mobile-nav-external {
+		color: var(--cs-color-text-muted);
+	}
 </style>
+
+<script>
+	class CsMobileNav extends HTMLElement {
+		private handleDocumentClick?: (e: MouseEvent) => void;
+		private handleKeyDown?: (e: KeyboardEvent) => void;
+
+		connectedCallback() {
+			const trigger = this.querySelector<HTMLButtonElement>('[data-mobile-nav-trigger]');
+			const panel = this.querySelector<HTMLElement>('[data-mobile-nav-panel]');
+			if (!trigger || !panel) return;
+
+			const setOpen = (open: boolean) => {
+				panel.hidden = !open;
+				trigger.setAttribute('aria-expanded', String(open));
+				trigger.setAttribute(
+					'aria-label',
+					open ? 'セクションメニューを閉じる' : 'セクションメニューを開く'
+				);
+			};
+
+			trigger.addEventListener('click', () => {
+				const isOpen = trigger.getAttribute('aria-expanded') === 'true';
+				setOpen(!isOpen);
+			});
+
+			this.handleDocumentClick = (e: MouseEvent) => {
+				if (!this.contains(e.target as Node)) {
+					setOpen(false);
+				}
+			};
+			this.handleKeyDown = (e: KeyboardEvent) => {
+				if (e.key === 'Escape' && !panel.hidden) {
+					setOpen(false);
+					trigger.focus();
+				}
+			};
+			document.addEventListener('click', this.handleDocumentClick);
+			document.addEventListener('keydown', this.handleKeyDown);
+		}
+
+		disconnectedCallback() {
+			if (this.handleDocumentClick) {
+				document.removeEventListener('click', this.handleDocumentClick);
+			}
+			if (this.handleKeyDown) {
+				document.removeEventListener('keydown', this.handleKeyDown);
+			}
+		}
+	}
+
+	if (!customElements.get('cs-mobile-nav')) {
+		customElements.define('cs-mobile-nav', CsMobileNav);
+	}
+</script>
