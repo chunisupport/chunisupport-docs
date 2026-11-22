@@ -22,6 +22,9 @@ const navLinks = [
 
 const isActiveSection = (prefix: string) =>
 	pathname === prefix || pathname.startsWith(`${prefix}/`);
+// 現在ページは 'page'、配下ページではセクションとして 'true' を返す
+const currentAttr = (href: string, prefix: string) =>
+	pathname === href ? 'page' : isActiveSection(prefix) ? 'true' : undefined;
 ---
 
 <div class="cs-header">
@@ -35,7 +38,7 @@ const isActiveSection = (prefix: string) =>
 					<a
 						href={href}
 						class="cs-header__nav-link"
-						aria-current={isActiveSection(prefix) ? 'page' : undefined}
+						aria-current={currentAttr(href, prefix)}
 					>
 						{label}
 					</a>
@@ -136,7 +139,7 @@ const isActiveSection = (prefix: string) =>
 								</li>
 								{navLinks.map(({ href, label, prefix }) => (
 									<li>
-										<a href={href} aria-current={isActiveSection(prefix) ? 'page' : undefined}>
+										<a href={href} aria-current={currentAttr(href, prefix)}>
 											{label}
 										</a>
 									</li>
@@ -233,7 +236,7 @@ const isActiveSection = (prefix: string) =>
 		color: var(--cs-color-text);
 	}
 
-	.cs-header__nav-link[aria-current='page'] {
+	.cs-header__nav-link[aria-current] {
 		background-color: var(--cs-color-action-primary-muted);
 		color: var(--cs-color-link);
 	}
@@ -387,7 +390,7 @@ const isActiveSection = (prefix: string) =>
 		color: var(--cs-color-text);
 	}
 
-	.cs-header__mobile-nav-panel a[aria-current='page'] {
+	.cs-header__mobile-nav-panel a[aria-current] {
 		background-color: var(--cs-color-action-primary-muted);
 		color: var(--cs-color-link);
 	}
@@ -434,8 +437,11 @@ const isActiveSection = (prefix: string) =>
 			};
 			this.handleKeyDown = (e: KeyboardEvent) => {
 				if (e.key === 'Escape' && !panel.hidden) {
+					// メニュー外（外観設定など）にあるフォーカスは奪わない
+					const focusInside =
+						panel.contains(document.activeElement) || document.activeElement === trigger;
 					setOpen(false);
-					trigger.focus();
+					if (focusInside) trigger.focus();
 				}
 			};
 			document.addEventListener('click', this.handleDocumentClick);

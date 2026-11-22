@@ -404,7 +404,8 @@
 
 	--cs-color-border: var(--color-gray-300);
 	--cs-color-border-strong: var(--color-gray-400);
-	--cs-color-focus-ring: var(--cs-color-accent-500);
+	/* 白背景で 3:1 以上を確保するため 700 を使う（500 は Green/Yellow で不足） */
+	--cs-color-focus-ring: var(--cs-color-accent-700);
 
 	--cs-color-action-primary: var(--cs-color-accent-700);
 	--cs-color-action-primary-hover: var(--cs-color-accent-800);
@@ -455,7 +456,7 @@
 
 	--cs-color-border: #f0ccb0;
 	--cs-color-border-strong: #e3b38c;
-	--cs-color-focus-ring: var(--cs-color-accent-500);
+	--cs-color-focus-ring: var(--cs-color-accent-700);
 
 	--cs-color-action-primary: var(--cs-color-accent-700);
 	--cs-color-action-primary-hover: var(--cs-color-accent-800);
@@ -1207,6 +1208,15 @@ h1#_top:not(.cs-hero h1) {
 		tbody
 		td:nth-child(2)[data-label='HTTP']:not(:where(.not-content *))::before {
 		content: 'HTTP ';
+		color: var(--cs-color-text-subtle);
+	}
+
+	/* thead を隠すため、型列は見出しを値の前に表示する */
+	.sl-markdown-content
+		table[data-cs-table]
+		tbody
+		td:nth-child(2)[data-label='型']:not(:where(.not-content *))::before {
+		content: '型 ';
 		color: var(--cs-color-text-subtle);
 	}
 

@@ -80,6 +80,12 @@
 		// 初期適用
 		apply(currentTheme, currentAccent, false);
 
+		// 別タブでの変更を反映する（書き戻しはしない）
+		window.addEventListener('storage', (e) => {
+			if (e.key === themeKey && themes.includes(e.newValue)) apply(e.newValue, currentAccent, true);
+			else if (e.key === accentKey && accents.includes(e.newValue)) apply(currentTheme, e.newValue, true);
+		});
+
 		return {
 			themeKey,
 			accentKey,

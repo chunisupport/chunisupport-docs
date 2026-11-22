@@ -8,11 +8,11 @@
 const stripHtml = (html: string): string =>
 	html
 		.replace(/<[^>]*>/g, '')
-		.replace(/&amp;/g, '&')
 		.replace(/&lt;/g, '<')
 		.replace(/&gt;/g, '>')
 		.replace(/&quot;/g, '"')
 		.replace(/&#39;|&#x27;/g, "'")
+		.replace(/&amp;/g, '&') // 最後に戻して二重デコードを防ぐ
 		.replace(/\s+/g, ' ')
 		.trim()
 

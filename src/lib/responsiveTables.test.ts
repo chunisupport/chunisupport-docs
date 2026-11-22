@@ -53,3 +53,12 @@ test('th 内に code 要素が含まれてもプレーンテキストとして d
 	assert.match(output, /<td data-label="HTTP \/ error\.code">404<\/td>/)
 	assert.match(output, /<td data-label="error\.message"><code>not found\.<\/code><\/td>/)
 })
+
+test('エスケープ済みの実体参照を二重にデコードしない', () => {
+	const input =
+		'<table><thead><tr><th><code>&amp;lt;</code></th><th>説明</th></tr></thead><tbody><tr><td>a</td><td>b</td></tr></tbody></table>'
+
+	const output = enhanceResponsiveTablesHtml(input)
+
+	assert.match(output, /<td data-label="&amp;lt;">a<\/td>/)
+})

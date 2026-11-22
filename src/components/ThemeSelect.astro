@@ -245,6 +245,16 @@ const ACCENT_OPTIONS = [
 			0 4px 10px -4px rgb(0 0 0 / 15%);
 	}
 
+	/* 狭い画面ではトリガー右端揃えだと左端がはみ出すため、ビューポート基準で配置する */
+	@media (max-width: 30rem) {
+		.cs-appearance__panel--popover {
+			position: fixed;
+			top: calc(var(--sl-nav-height, 3.5rem) + 0.25rem);
+			inset-inline: 0.75rem;
+			width: auto;
+		}
+	}
+
 	.cs-appearance__section {
 		display: flex;
 		flex-direction: column;
@@ -355,7 +365,7 @@ const ACCENT_OPTIONS = [
 			box-shadow 140ms ease;
 	}
 
-	.cs-appearance__accent-btn[data-accent-option='yellow'] {
+	.cs-appearance__accent-btn:is([data-accent-option='yellow'], [data-accent-option='green']) {
 		color: #111827;
 	}
 
