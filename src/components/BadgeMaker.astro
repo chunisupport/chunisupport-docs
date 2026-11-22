@@ -4,170 +4,279 @@
  */
 
 import {
-    PUBLIC_API_BASE_URL,
-    PUBLIC_APP_URL,
+	PUBLIC_API_BASE_URL,
+	PUBLIC_APP_URL,
 } from 'astro:env/server'
 import crypto from 'node:crypto'
 
 interface Props {
-    label: string
-    endpoint: string
-    defaultParams: Record<string, string>
-    linkTo: string
+	label: string
+	endpoint: string
+	defaultParams: Record<string, string>
+	linkTo: string
 }
 
 const { label, endpoint, defaultParams, linkTo } = Astro.props
 
 const nonce = crypto.randomUUID()
-
 ---
 
 <div
-  class="badge-maker"
-  data-badge-maker
-  data-badge-maker-label={label}
-  data-badge-maker-endpoint={endpoint}
-  data-badge-maker-link-to={linkTo}
-  data-badge-maker-base-url={PUBLIC_API_BASE_URL}
-  data-badge-maker-app-url={PUBLIC_APP_URL}
+	class="badge-maker not-content"
+	data-badge-maker
+	data-badge-maker-label={label}
+	data-badge-maker-endpoint={endpoint}
+	data-badge-maker-link-to={linkTo}
+	data-badge-maker-base-url={PUBLIC_API_BASE_URL}
+	data-badge-maker-app-url={PUBLIC_APP_URL}
 >
-  <strong>パラメータ</strong>
-  <div class="badge-maker__param_container">
-    {Object.entries(defaultParams).map(([key, example]) => (
-      <label for={`badge-maker-${nonce}-${key}`}>:{key}</label>
-      <input
-        class="badge-maker__input"
-        id={`badge-maker-${nonce}-${key}`}
-        type="text"
-        value={example}
-        data-badge-maker-param
-        data-badge-maker-param-key={key}
-      />
-    ))}
-  </div>
-  <strong>プレビュー</strong>
-  <!-- 位置が動きすぎる（CLS）のを防ぐため、適当な初期値を設定しておく -->
-  <img src={`https://img.shields.io/badge/Loading-lightgrey`} alt="バッジのプレビュー" />
-  <strong>Markdown</strong>
-  <code data-badge-maker-value></code>
-  <div class="badge-maker__actions">
-    <button type="button" data-badge-maker-copy>コピー</button>
-    <span class="badge-maker__status" role="status" aria-live="polite"></span>
-  </div>
+	<div class="badge-maker__section">
+		<strong class="badge-maker__heading">パラメータ</strong>
+		<div class="badge-maker__param-container">
+			{
+				Object.entries(defaultParams).map(([key, example]) => (
+					<>
+						<label class="badge-maker__label" for={`badge-maker-${nonce}-${key}`}>
+							:{key}
+						</label>
+						<input
+							class="badge-maker__input"
+							id={`badge-maker-${nonce}-${key}`}
+							type="text"
+							value={example}
+							data-badge-maker-param
+							data-badge-maker-param-key={key}
+						/>
+					</>
+				))
+			}
+		</div>
+	</div>
+
+	<div class="badge-maker__section">
+		<strong class="badge-maker__heading">プレビュー</strong>
+		<div class="badge-maker__preview">
+			{/* 位置が動きすぎる（CLS）のを防ぐため、初期値を設定しておく */}
+			<img src="https://img.shields.io/badge/Loading-lightgrey" alt="バッジのプレビュー" />
+		</div>
+	</div>
+
+	<div class="badge-maker__section">
+		<strong class="badge-maker__heading">Markdown</strong>
+		<code class="badge-maker__code" data-badge-maker-value></code>
+		<div class="badge-maker__actions">
+			<button type="button" class="badge-maker__button" data-badge-maker-copy>
+				<svg
+					viewBox="0 0 24 24"
+					width="15"
+					height="15"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+					<path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+				</svg>
+				<span>コピー</span>
+			</button>
+			<span class="badge-maker__status" role="status" aria-live="polite"></span>
+		</div>
+	</div>
 </div>
 
 <script>
-  for (const container of document.querySelectorAll<HTMLElement>('[data-badge-maker]')) {
-    const value = container.querySelector<HTMLElement>('[data-badge-maker-value]')
-    const fields = container.querySelectorAll<HTMLInputElement>('[data-badge-maker-param]')
-    const preview = container.querySelector<HTMLImageElement>('img')
+	for (const container of document.querySelectorAll<HTMLElement>('[data-badge-maker]')) {
+		const value = container.querySelector<HTMLElement>('[data-badge-maker-value]')
+		const fields = container.querySelectorAll<HTMLInputElement>('[data-badge-maker-param]')
+		const preview = container.querySelector<HTMLImageElement>('img')
 
-    let updateTimeout: ReturnType<typeof setTimeout> | null = null
+		let updateTimeout: ReturnType<typeof setTimeout> | null = null
 
-    const generateBadgeUrl = () => {
-      const label = container.dataset.badgeMakerLabel ?? ''
-      let resolvedEndpoint = container.dataset.badgeMakerEndpoint ?? ''
-      let resolvedLinkTo = container.dataset.badgeMakerLinkTo ?? ''
-      const baseUrl = container.dataset.badgeMakerBaseUrl ?? ''
-      const appUrl = container.dataset.badgeMakerAppUrl ?? ''
-      for (const field of fields) {
-        const key = field.dataset.badgeMakerParamKey
-        resolvedEndpoint = resolvedEndpoint.replace(`:${key}`, encodeURIComponent(field.value))
-        resolvedLinkTo = resolvedLinkTo.replace(`:${key}`, encodeURIComponent(field.value))
-      }
-      const badgeUrl = `https://img.shields.io/endpoint?url=${encodeURIComponent(`${baseUrl}${resolvedEndpoint}`)}`
-      if (value) value.textContent = `[![${label}](${badgeUrl})](${appUrl}${resolvedLinkTo})`
+		const generateBadgeUrl = () => {
+			const label = container.dataset.badgeMakerLabel ?? ''
+			let resolvedEndpoint = container.dataset.badgeMakerEndpoint ?? ''
+			let resolvedLinkTo = container.dataset.badgeMakerLinkTo ?? ''
+			const baseUrl = container.dataset.badgeMakerBaseUrl ?? ''
+			const appUrl = container.dataset.badgeMakerAppUrl ?? ''
+			for (const field of fields) {
+				const key = field.dataset.badgeMakerParamKey
+				resolvedEndpoint = resolvedEndpoint.replace(`:${key}`, encodeURIComponent(field.value))
+				resolvedLinkTo = resolvedLinkTo.replace(`:${key}`, encodeURIComponent(field.value))
+			}
+			const badgeUrl = `https://img.shields.io/endpoint?url=${encodeURIComponent(`${baseUrl}${resolvedEndpoint}`)}`
+			if (value) value.textContent = `[![${label}](${badgeUrl})](${appUrl}${resolvedLinkTo})`
 
-      if (updateTimeout) clearTimeout(updateTimeout)
-      updateTimeout = setTimeout(() => {
-        if (preview) preview.src = badgeUrl
-      }, 100)
-    }
+			if (updateTimeout) clearTimeout(updateTimeout)
+			updateTimeout = setTimeout(() => {
+				if (preview) preview.src = badgeUrl
+			}, 100)
+		}
 
-    for (const field of fields) {
-      field.addEventListener('input', generateBadgeUrl)
-    }
+		for (const field of fields) {
+			field.addEventListener('input', generateBadgeUrl)
+		}
 
-    generateBadgeUrl()
+		generateBadgeUrl()
 
-    const button = container.querySelector<HTMLButtonElement>('[data-badge-maker-copy]')
-    const status = container.querySelector<HTMLElement>('.badge-maker__status')
+		const button = container.querySelector<HTMLButtonElement>('[data-badge-maker-copy]')
+		const status = container.querySelector<HTMLElement>('.badge-maker__status')
 
-    button?.addEventListener('click', async () => {
-      if (!value || !status) return
+		button?.addEventListener('click', async () => {
+			if (!value || !status) return
 
-      try {
-        await navigator.clipboard.writeText(value.textContent ?? '')
-        status.textContent = 'コピーしました'
-      } catch {
-        status.textContent = 'コピーに失敗しました。手動でコピーしてください。'
-      }
-    })
-  }
+			try {
+				await navigator.clipboard.writeText(value.textContent ?? '')
+				status.textContent = 'コピーしました'
+				status.dataset.state = 'success'
+			} catch {
+				status.textContent = 'コピーに失敗しました。手動でコピーしてください。'
+				status.dataset.state = 'error'
+			}
+		})
+	}
 </script>
 
 <style>
-  .badge-maker {
-    margin-block: 1rem;
-    padding: 1rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
-    background: var(--sl-color-gray-6);
-  }
+	.badge-maker {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		margin-block: 1.25rem;
+		padding: 1.125rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface-muted);
+	}
 
-  code {
-    display: block;
-    overflow-wrap: anywhere;
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    background: var(--sl-color-black);
-    font-size: var(--sl-text-xs);
-    line-height: 1.6;
-  }
+	.badge-maker__section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
 
-  .badge-maker__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 0.75rem;
-  }
+	.badge-maker__heading {
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
+		color: var(--cs-color-text-muted);
+	}
 
-  .badge-maker__param_container {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.5rem 0.75rem;
-    font-family: var(--sl-font-mono);
-  }
+	.badge-maker__param-container {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: center;
+		gap: 0.5rem 0.75rem;
+	}
 
-  .badge-maker__input {
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
-    padding-inline-start: 0.75rem;
-    padding-inline-end: 0.5rem;
-    background-color: var(--sl-color-black);
-    color: var(--sl-color-gray-2);
-    font-size: var(--sl-text-sm);
-    width: 100%;
-  }
+	.badge-maker__label {
+		font-family: var(--cs-font-mono);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--cs-color-text);
+	}
 
-  button {
-    padding: 0.5rem 0.875rem;
-    border: 0;
-    border-radius: 0.375rem;
-    background: var(--sl-color-accent-high);
-    color: var(--sl-color-black);
-    font: inherit;
-    font-weight: 600;
-    cursor: pointer;
-  }
+	.badge-maker__input {
+		width: 100%;
+		min-height: 2.25rem;
+		padding: 0.375rem 0.75rem;
+		border: 1px solid var(--cs-color-input-border);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-input-bg);
+		color: var(--cs-color-text);
+		font-family: var(--cs-font-mono);
+		font-size: 0.875rem;
+		transition:
+			border-color 140ms ease,
+			box-shadow 140ms ease;
+	}
 
-  button:hover {
-    background: var(--sl-color-accent);
-  }
+	.badge-maker__input:hover {
+		border-color: var(--cs-color-input-border-hover);
+	}
 
-  .badge-maker__status {
-    color: var(--sl-color-gray-2);
-    font-size: var(--sl-text-sm);
-  }
+	.badge-maker__input:focus {
+		outline: none;
+		border-color: var(--cs-color-focus-ring);
+		box-shadow: inset 0 0 0 1px var(--cs-color-focus-ring);
+	}
+
+	.badge-maker__preview {
+		display: flex;
+		align-items: center;
+		min-height: 2.5rem;
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-surface);
+	}
+
+	.badge-maker__preview img {
+		display: block;
+		max-width: 100%;
+		height: auto;
+	}
+
+	.badge-maker__code {
+		display: block;
+		overflow-wrap: anywhere;
+		padding: 0.75rem 0.875rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-input-bg);
+		color: var(--cs-color-text);
+		font-family: var(--cs-font-mono);
+		font-size: 0.8125rem;
+		line-height: 1.6;
+	}
+
+	.badge-maker__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.25rem;
+	}
+
+	.badge-maker__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		min-height: 2.25rem;
+		padding: 0.4375rem 0.9375rem;
+		border: 1px solid var(--cs-color-action-primary);
+		border-radius: 0.375rem;
+		background-color: var(--cs-color-action-primary);
+		color: var(--cs-color-text-inverse);
+		font: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1;
+		cursor: pointer;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease;
+	}
+
+	.badge-maker__button:hover {
+		background-color: var(--cs-color-action-primary-hover);
+		border-color: var(--cs-color-action-primary-hover);
+	}
+
+	.badge-maker__status {
+		color: var(--cs-color-text-muted);
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+
+	.badge-maker__status[data-state='success'] {
+		color: var(--cs-color-success);
+	}
+
+	.badge-maker__status[data-state='error'] {
+		color: var(--cs-color-danger);
+	}
 </style>

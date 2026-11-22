@@ -1,108 +1,137 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
 import {
-  ANNOUNCEMENT_CATEGORY_LABELS,
-  announcementPath,
-  formatAnnouncementDate,
-  getAnnouncements,
+	ANNOUNCEMENT_CATEGORY_LABELS,
+	announcementPath,
+	formatAnnouncementDate,
+	getAnnouncements,
 } from '../../lib/announcements'
 
 const announcements = await getAnnouncements()
 ---
 
 <StarlightPage
-  hasSidebar={false}
-  frontmatter={{
-    title: 'お知らせ',
-    tableOfContents: false,
-    description: 'ChuniSupportの更新、メンテナンス、重要なご案内を掲載します。',
-  }}
+	hasSidebar={false}
+	frontmatter={{
+		title: 'お知らせ',
+		tableOfContents: false,
+		description: 'ChuniSupportの更新、メンテナンス、重要なご案内を掲載します。',
+	}}
 >
-  {
-    announcements.length === 0 ? (
-      <p>現在、お知らせはありません。</p>
-    ) : (
-      <ol class="announcement-list">
-        {announcements.map((announcement) => (
-          <li>
-            <article>
-              <div class="announcement-meta">
-                <span class={`announcement-category category-${announcement.data.category}`}>
-                  {ANNOUNCEMENT_CATEGORY_LABELS[announcement.data.category]}
-                </span>
-                <time datetime={announcement.data.publishedAt.toISOString().slice(0, 10)}>
-                  {formatAnnouncementDate(announcement.data.publishedAt)}
-                </time>
-              </div>
-              <h2>
-                <a href={announcementPath(announcement.id)}>{announcement.data.title}</a>
-              </h2>
-              <p>{announcement.data.summary}</p>
-            </article>
-          </li>
-        ))}
-      </ol>
-    )
-  }
+	{
+		announcements.length === 0 ? (
+			<p class="announcement-empty">現在、お知らせはありません。</p>
+		) : (
+			<ol class="announcement-list not-content">
+				{announcements.map((announcement) => (
+					<li>
+						<a href={announcementPath(announcement.id)} class="announcement-card">
+							<div class="announcement-meta">
+								<span class={`announcement-category category-${announcement.data.category}`}>
+									{ANNOUNCEMENT_CATEGORY_LABELS[announcement.data.category]}
+								</span>
+								<time datetime={announcement.data.publishedAt.toISOString().slice(0, 10)}>
+									{formatAnnouncementDate(announcement.data.publishedAt)}
+								</time>
+							</div>
+							<h2 class="announcement-title">{announcement.data.title}</h2>
+							<p class="announcement-summary">{announcement.data.summary}</p>
+						</a>
+					</li>
+				))}
+			</ol>
+		)
+	}
 </StarlightPage>
 
 <style>
-  .announcement-list {
-    display: grid;
-    gap: 1rem;
-    padding: 0;
-    list-style: none;
-  }
+	.announcement-empty {
+		color: var(--cs-color-text-muted);
+	}
 
-  .announcement-list article {
-    padding: 1.25rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
-  }
+	.announcement-list {
+		display: grid;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
 
-  .announcement-list h2 {
-    margin-block: 0.5rem 0.25rem;
-    font-size: var(--sl-text-h3);
-  }
+	.announcement-card {
+		display: block;
+		padding: 1rem 1.125rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 0.5rem;
+		background-color: var(--cs-color-surface);
+		text-decoration: none;
+		transition:
+			background-color 150ms ease,
+			border-color 150ms ease;
+	}
 
-  .announcement-list p {
-    margin: 0;
-    color: var(--sl-color-gray-2);
-  }
+	.announcement-card:hover {
+		background-color: var(--cs-color-surface-muted);
+		border-color: var(--cs-color-border-strong);
+	}
 
-  .announcement-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--sl-color-gray-3);
-    font-size: var(--sl-text-sm);
-  }
+	.announcement-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 0.625rem;
+		margin-bottom: 0.5rem;
+		color: var(--cs-color-text-muted);
+		font-size: 0.75rem;
+	}
 
-  .announcement-category {
-    padding: 0.15rem 0.55rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 999px;
-    color: var(--sl-color-white);
-    background: var(--sl-color-gray-6);
-    font-weight: 600;
-  }
+	.announcement-category {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.125rem 0.55rem;
+		border: 1px solid var(--cs-color-border);
+		border-radius: 9999px;
+		background-color: var(--cs-color-surface-muted);
+		color: var(--cs-color-text-muted);
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1.4;
+	}
 
-  .category-important {
-    border-color: var(--sl-color-red-low);
-    color: var(--sl-color-red-high);
-    background: var(--sl-color-red-low);
-  }
+	.category-important {
+		border-color: var(--cs-color-danger-border);
+		background-color: var(--cs-color-danger-bg);
+		color: var(--cs-color-danger);
+	}
 
-  .category-update {
-    border-color: var(--sl-color-blue-low);
-    color: var(--sl-color-blue-high);
-    background: var(--sl-color-blue-low);
-  }
+	.category-update {
+		border-color: var(--cs-color-info-border);
+		background-color: var(--cs-color-info-bg);
+		color: var(--cs-color-info);
+	}
 
-  .category-maintenance {
-    border-color: var(--sl-color-orange-low);
-    color: var(--sl-color-orange-high);
-    background: var(--sl-color-orange-low);
-  }
+	.category-maintenance {
+		border-color: var(--cs-color-warning-border);
+		background-color: var(--cs-color-warning-bg);
+		color: var(--cs-color-warning);
+	}
+
+	.announcement-title {
+		margin: 0 0 0.375rem;
+		color: var(--cs-color-text);
+		font-size: 1rem;
+		font-weight: 700;
+		line-height: 1.45;
+		transition: color 140ms ease;
+	}
+
+	.announcement-card:hover .announcement-title {
+		color: var(--cs-color-link);
+	}
+
+	.announcement-summary {
+		margin: 0;
+		color: var(--cs-color-text-muted);
+		font-size: 0.875rem;
+		line-height: 1.65;
+	}
 </style>

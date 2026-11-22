@@ -8,114 +8,6 @@ sidebar:
 
 プレイヤー情報、RATING、公式RATING・OVER POWERの履歴を取得するAPIです。
 
-## GET `/v1/users/:username/rating-op-history`
-
-CHUNITHM-NETから取得した公式RATING・公式OVER POWER・公式OP%の履歴を、現在値を先頭に新しい順で取得します。保存される履歴は最大500件で、現在値を含むレスポンスは最大501件です。
-
-**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
-
-**リクエスト**:
-
-```
-GET /v1/users/kjumanenobikto/rating-op-history
-Authorization: Bearer <APIトークン>
-```
-
-**パスパラメータ**:
-
-| パラメータ | 型 | 説明 |
-| ---------- | -- | ---- |
-| `username` | string | 対象ユーザー名 |
-
-**レスポンス**: 200 OK
-
-```json
-{
-  "entries": [
-    {
-      "rating": 17.46,
-      "overpower": 103750.12,
-      "overpower_percent": 76.42,
-      "data_collected_at": "2026-09-24T12:34:56+09:00"
-    }
-  ]
-}
-```
-
-| フィールド | 型 | 説明 |
-| ---------- | -- | ---- |
-| `entries` | array | 現在値と保存済み履歴の配列（新しい順） |
-| `entries[].rating` | number | CHUNITHM-NETから取得した公式RATING |
-| `entries[].overpower` | number | CHUNITHM-NETから取得した公式OVER POWER値 |
-| `entries[].overpower_percent` | number \| null | CHUNITHM-NETから取得した公式OP%。記録開始前は `null` |
-| `entries[].data_collected_at` | string | データ取得日時（ISO8601） |
-
-**エラー**:
-
-| コード | HTTP | 説明 |
-| ------ | ---- | ---- |
-| `player_metric_history_not_found` | 404 | プレイヤー未連携などにより履歴が存在しません |
-| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
-
----
-
-## GET `/v1/users/:username/rating`
-
-指定されたユーザーの計算RATINGとレーティング枠だけを取得する軽量APIです。通常譜面全件の `standard`、WORLD'S ENDの `worldsend`、コースの `course` は返しません。レーティング枠はプレイ済みレコードから算出するため、未プレイ補完データは含まれません。
-
-**プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。
-
-**リクエスト**:
-
-```
-GET /v1/users/kjumanenobikto/rating
-Authorization: Bearer <APIトークン>
-```
-
-**パスパラメータ**:
-
-| パラメータ | 型 | 説明 |
-| ---------- | -- | ---- |
-| `username` | string | 対象ユーザー名 |
-
-**レスポンス**: 200 OK
-
-```json
-{
-  "rating": 17.4632,
-  "best_average": 17.5123,
-  "new_average": 17.3159,
-  "best": [],
-  "best_candidate": [],
-  "new": [],
-  "new_candidate": [],
-  "meta": {
-    "updated_at": "2026-06-21T23:58:02+09:00"
-  }
-}
-```
-
-| フィールド | 型 | 説明 |
-| ---------- | -- | ---- |
-| `rating` | number \| null | BEST枠とNEW枠から計算したプレイヤーRATING |
-| `best_average` | number \| null | BEST枠の平均RATING |
-| `new_average` | number \| null | NEW枠の平均RATING |
-| `best` | array | ベスト枠レコード |
-| `best_candidate` | array | ベスト候補枠レコード |
-| `new` | array | 新曲枠レコード |
-| `new_candidate` | array | 新曲候補枠レコード |
-| `meta.updated_at` | string \| null | レーティング枠レコードの最終更新日時。対象レコードがなければプレイヤー更新日時、プレイヤー未連携なら `null` |
-
-各レコード要素は [GET `/v1/users/:username`](#get-v1usersusername) の `best` / `best_candidate` / `new` / `new_candidate` と同じ形式です。プレイヤー未連携時はRATINGと平均値が `null`、各配列が空になります。
-
-**エラー**:
-
-| コード | HTTP | 説明 |
-| ------ | ---- | ---- |
-| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
-
----
-
 ## GET `/v1/users/:username`
 
 指定されたユーザーのプロフィールとスコアレコードを取得します。
@@ -190,98 +82,10 @@ Authorization: Bearer <APIトークン>
         "slot": "best"
       }
     ],
-    "best_candidate": [
-      {
-        "updated_at": "2026-06-10T21:58:32+09:00",
-        "is_played": true,
-        "is_op_target": true,
-        "difficulty": "MASTER",
-        "id": "dd70f42fce1b3247",
-        "title": "Rebellion",
-        "artist": "Kai",
-        "const": 15.4,
-        "is_const_unknown": false,
-        "score": 1007646,
-        "justice_count": null,
-        "rating": 17.41,
-        "overpower": 87.215,
-        "overpower_percent": 94.7989,
-        "img": "f3f526bb5400bcb6",
-        "clear_lamp": "HARD",
-        "combo_lamp": null,
-        "full_chain": null,
-        "slot": "best_candidate"
-      }
-    ],
-    "new": [
-      {
-        "updated_at": "2026-06-10T21:58:32+09:00",
-        "is_played": true,
-        "is_op_target": true,
-        "difficulty": "MASTER",
-        "id": "f57d6fec0d075455",
-        "title": "YOUNITHM",
-        "artist": "大国奏音",
-        "const": 15.5,
-        "is_const_unknown": false,
-        "score": 1008932,
-        "justice_count": null,
-        "rating": 17.64,
-        "overpower": 89.645,
-        "overpower_percent": 96.9135,
-        "img": "a83a089481cb3703",
-        "clear_lamp": "HARD",
-        "combo_lamp": null,
-        "full_chain": null,
-        "slot": "new"
-      }
-    ],
-    "new_candidate": [
-      {
-        "updated_at": "2026-06-14T10:17:22+09:00",
-        "is_played": true,
-        "is_op_target": true,
-        "difficulty": "MASTER",
-        "id": "0c272957c22a66e0",
-        "title": "Phantom Crisis",
-        "artist": "t+pazolite vs Yuta Imai",
-        "const": 15.5,
-        "is_const_unknown": false,
-        "score": 1005241,
-        "justice_count": null,
-        "rating": 17.04,
-        "overpower": 85.24,
-        "overpower_percent": 92.1514,
-        "img": "691d65ce2e1e4129",
-        "clear_lamp": "HARD",
-        "combo_lamp": null,
-        "full_chain": null,
-        "slot": "new_candidate"
-      }
-    ],
-    "standard": [
-      {
-        "updated_at": "2026-06-21T23:58:02+09:00",
-        "is_played": true,
-        "is_op_target": true,
-        "difficulty": "MASTER",
-        "id": "5a25917e0249159b",
-        "title": "水晶世界 ～Fracture～",
-        "artist": "wa. remixed celas",
-        "const": 14.9,
-        "is_const_unknown": false,
-        "score": 1009566,
-        "justice_count": 65,
-        "rating": 17.05,
-        "overpower": 88.595,
-        "overpower_percent": 98.9888,
-        "img": "58a8b2d2241876b4",
-        "clear_lamp": "ABSOLUTE",
-        "combo_lamp": "ALL JUSTICE",
-        "full_chain": null,
-        "slot": null
-      }
-    ],
+    "best_candidate": [],
+    "new": [],
+    "new_candidate": [],
+    "standard": [],
     "worldsend": [
       {
         "updated_at": "2026-06-10T21:58:32+09:00",
@@ -317,6 +121,8 @@ Authorization: Bearer <APIトークン>
   "updated_at": "2026-06-22T08:39:49+09:00"
 }
 ```
+
+`best_candidate` / `new` / `new_candidate` / `standard` の各要素は `best` と同じ形式です（`slot` の値のみ枠に応じて変わります）。
 
 ### トップレベル
 
@@ -438,4 +244,112 @@ Authorization: Bearer <APIトークン>
 
 | コード | HTTP | 説明 |
 | ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
+## GET `/v1/users/:username/rating`
+
+指定されたユーザーの計算RATINGとレーティング枠だけを取得する軽量APIです。通常譜面全件の `standard`、WORLD'S ENDの `worldsend`、コースの `course` は返しません。レーティング枠はプレイ済みレコードから算出するため、未プレイ補完データは含まれません。
+
+**プライバシーについて**: 非公開設定のユーザーは、本人または承認済みフレンド以外からのリクエストに対して `404 Not Found` を返します。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto/rating
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "rating": 17.4632,
+  "best_average": 17.5123,
+  "new_average": 17.3159,
+  "best": [],
+  "best_candidate": [],
+  "new": [],
+  "new_candidate": [],
+  "meta": {
+    "updated_at": "2026-06-21T23:58:02+09:00"
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `rating` | number \| null | BEST枠とNEW枠から計算したプレイヤーRATING |
+| `best_average` | number \| null | BEST枠の平均RATING |
+| `new_average` | number \| null | NEW枠の平均RATING |
+| `best` | array | ベスト枠レコード |
+| `best_candidate` | array | ベスト候補枠レコード |
+| `new` | array | 新曲枠レコード |
+| `new_candidate` | array | 新曲候補枠レコード |
+| `meta.updated_at` | string \| null | レーティング枠レコードの最終更新日時。対象レコードがなければプレイヤー更新日時、プレイヤー未連携なら `null` |
+
+各レコード要素は [GET `/v1/users/:username`](#get-v1usersusername) の `best` / `best_candidate` / `new` / `new_candidate` と同じ形式です。プレイヤー未連携時はRATINGと平均値が `null`、各配列が空になります。
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
+
+---
+
+## GET `/v1/users/:username/rating-op-history`
+
+CHUNITHM-NETから取得した公式RATING・公式OVER POWER・公式OP%の履歴を、現在値を先頭に新しい順で取得します。保存される履歴は最大500件で、現在値を含むレスポンスは最大501件です。
+
+**認証**: APIトークン必須。非公開ユーザーは本人または承認済みフレンドのみ参照できます。
+
+**リクエスト**:
+
+```
+GET /v1/users/kjumanenobikto/rating-op-history
+Authorization: Bearer <APIトークン>
+```
+
+**パスパラメータ**:
+
+| パラメータ | 型 | 説明 |
+| ---------- | -- | ---- |
+| `username` | string | 対象ユーザー名 |
+
+**レスポンス**: 200 OK
+
+```json
+{
+  "entries": [
+    {
+      "rating": 17.46,
+      "overpower": 103750.12,
+      "overpower_percent": 76.42,
+      "data_collected_at": "2026-09-24T12:34:56+09:00"
+    }
+  ]
+}
+```
+
+| フィールド | 型 | 説明 |
+| ---------- | -- | ---- |
+| `entries` | array | 現在値と保存済み履歴の配列（新しい順） |
+| `entries[].rating` | number | CHUNITHM-NETから取得した公式RATING |
+| `entries[].overpower` | number | CHUNITHM-NETから取得した公式OVER POWER値 |
+| `entries[].overpower_percent` | number \| null | CHUNITHM-NETから取得した公式OP%。記録開始前は `null` |
+| `entries[].data_collected_at` | string | データ取得日時（ISO8601） |
+
+**エラー**:
+
+| コード | HTTP | 説明 |
+| ------ | ---- | ---- |
+| `player_metric_history_not_found` | 404 | プレイヤー未連携などにより履歴が存在しません |
 | `user_not_found` | 404 | ユーザーが見つからない、または非公開設定のため閲覧できません |
