@@ -25,6 +25,16 @@ import DefaultMarkdownContent from '@astrojs/starlight/components/MarkdownConten
 		if (headers.length === 0) continue;
 
 		table.dataset.csTable = resolveTableLayout(headers);
+		// ビルド時と同じく、display を変えても表の意味が残るよう role を明示する
+		table.setAttribute('role', 'table');
+		for (const [selector, role] of [
+			['thead, tbody', 'rowgroup'],
+			['tr', 'row'],
+			['th', 'columnheader'],
+			['td', 'cell'],
+		] as const) {
+			for (const el of table.querySelectorAll(selector)) el.setAttribute('role', role);
+		}
 		for (const row of table.querySelectorAll('tbody tr')) {
 			const cells = row.querySelectorAll('td');
 			cells.forEach((cell, index) => {

@@ -8,10 +8,10 @@ test('3列の説明付きテーブルへ spec-3 と各セルの data-label を�
 
 	const output = enhanceResponsiveTablesHtml(input)
 
-	assert.match(output, /<table data-cs-table="spec-3">/)
-	assert.match(output, /<td data-label="コード"><code>player_metric_history_not_found<\/code><\/td>/)
-	assert.match(output, /<td data-label="HTTP">404<\/td>/)
-	assert.match(output, /<td data-label="説明">履歴が存在しません<\/td>/)
+	assert.match(output, /<table role="table" data-cs-table="spec-3">/)
+	assert.match(output, /<td role="cell" data-label="コード"><code>player_metric_history_not_found<\/code><\/td>/)
+	assert.match(output, /<td role="cell" data-label="HTTP">404<\/td>/)
+	assert.match(output, /<td role="cell" data-label="説明">履歴が存在しません<\/td>/)
 })
 
 test('4列の説明付きテーブルへ spec-4 を付与する', () => {
@@ -20,8 +20,8 @@ test('4列の説明付きテーブルへ spec-4 を付与する', () => {
 
 	const output = enhanceResponsiveTablesHtml(input)
 
-	assert.match(output, /<table data-cs-table="spec-4">/)
-	assert.match(output, /<td data-label="必須">○<\/td>/)
+	assert.match(output, /<table role="table" data-cs-table="spec-4">/)
+	assert.match(output, /<td role="cell" data-label="必須">○<\/td>/)
 })
 
 test('2列テーブルへ pair を付与する', () => {
@@ -30,7 +30,7 @@ test('2列テーブルへ pair を付与する', () => {
 
 	const output = enhanceResponsiveTablesHtml(input)
 
-	assert.match(output, /<table data-cs-table="pair">/)
+	assert.match(output, /<table role="table" data-cs-table="pair">/)
 })
 
 test('末尾が説明でない4列比較テーブルへ stacked を付与し、属性値のクォートをエスケープする', () => {
@@ -39,8 +39,8 @@ test('末尾が説明でない4列比較テーブルへ stacked を付与し、�
 
 	const output = enhanceResponsiveTablesHtml(input)
 
-	assert.match(output, /<table data-cs-table="stacked">/)
-	assert.match(output, /<td data-label="WORLD'S END">曲名【属性】<\/td>/)
+	assert.match(output, /<table role="table" data-cs-table="stacked">/)
+	assert.match(output, /<td role="cell" data-label="WORLD'S END">曲名【属性】<\/td>/)
 })
 
 test('th 内に code 要素が含まれてもプレーンテキストとして data-label を抽出する', () => {
@@ -49,9 +49,9 @@ test('th 内に code 要素が含まれてもプレーンテキストとして d
 
 	const output = enhanceResponsiveTablesHtml(input)
 
-	assert.match(output, /<table data-cs-table="spec-3">/)
-	assert.match(output, /<td data-label="HTTP \/ error\.code">404<\/td>/)
-	assert.match(output, /<td data-label="error\.message"><code>not found\.<\/code><\/td>/)
+	assert.match(output, /<table role="table" data-cs-table="spec-3">/)
+	assert.match(output, /<td role="cell" data-label="HTTP \/ error\.code">404<\/td>/)
+	assert.match(output, /<td role="cell" data-label="error\.message"><code>not found\.<\/code><\/td>/)
 })
 
 test('エスケープ済みの実体参照を二重にデコードしない', () => {
@@ -60,5 +60,15 @@ test('エスケープ済みの実体参照を二重にデコードしない', ()
 
 	const output = enhanceResponsiveTablesHtml(input)
 
-	assert.match(output, /<td data-label="&amp;lt;">a<\/td>/)
+	assert.match(output, /<td role="cell" data-label="&amp;lt;">a<\/td>/)
+})
+
+test('表示を変えても表の意味が残るよう各要素へ role を付与する', () => {
+	const input =
+		'<table><thead><tr><th>項目</th><th>型</th><th>説明</th></tr></thead><tbody><tr><td>id</td><td>string</td><td>ID</td></tr></tbody></table>'
+
+	const output = enhanceResponsiveTablesHtml(input)
+
+	assert.match(output, /<thead role="rowgroup"><tr role="row"><th role="columnheader">項目<\/th><th role="columnheader">型<\/th>/)
+	assert.match(output, /<tbody role="rowgroup"><tr role="row"><td role="cell" data-label="項目">id<\/td>/)
 })

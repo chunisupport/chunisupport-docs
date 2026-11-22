@@ -71,6 +71,13 @@ export const enhanceResponsiveTablesHtml = (html: string): string => {
 			}
 		)
 
-		return `<table${tableAttrs} data-cs-table="${layout}">${enhancedInner}</table>`
+		// モバイルで display を変えても表の意味（列見出しとセルの関係）を支援技術へ伝えるため role を明示する
+		const withRoles = enhancedInner
+			.replace(/<(thead|tbody)\b/gi, '<$1 role="rowgroup"')
+			.replace(/<tr\b/gi, '<tr role="row"')
+			.replace(/<th\b/gi, '<th role="columnheader"')
+			.replace(/<td\b/gi, '<td role="cell"')
+
+		return `<table${tableAttrs} role="table" data-cs-table="${layout}">${withRoles}</table>`
 	})
 }
